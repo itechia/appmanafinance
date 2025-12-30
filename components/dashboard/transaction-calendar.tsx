@@ -2,8 +2,6 @@
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import type { Transaction, Card as CreditCard, Wallet } from "@/lib/types/app-types"
 import { PayInvoiceDialog } from "@/components/dashboard/pay-invoice-dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -36,73 +34,29 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
     return accountId
   }
 
-  const previousMonth = () => {
-    onDateChange(new Date(year, month - 1, 1))
-  }
-
-  const nextMonth = () => {
-    onDateChange(new Date(year, month + 1, 1))
-  }
-
-  const monthNames = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
-  ]
-
   const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 
   // --- Invoice Calculation Logic ---
-  // Calculates the invoice amount for a specific card that falls in the CURRENT month's due date.
-  // Requires transactions from previous months if the billing cycle started there.
   const getInvoiceForDay = (day: number) => {
     const invoices: { card: CreditCard; amount: number }[] = []
 
     cards.forEach((card) => {
-      // Check if this card's due date is today
       if ((card.dueDate || card.dueDay) === day) {
-        // Determine the billing cycle for this invoice
-        // The Closing Date is usually ~10 days before Due Date.
-        // We need to find the START and END of the cycle that produced this invoice.
-
-        // Example: Due Date 10th Jan.
-        // Closing Date 1st Jan.
-        // Cycle: Previous Closing + 1 (Dec 2nd) -> Current Closing (Jan 1st).
-
-        // If Closing Date is NOT defined, assume 10 days before Due Date?
-        // Let's use card.closingDay if available, else derive it.
         const closingDay = card.closingDay || Math.max(1, (card.dueDate || card.dueDay || 10) - 10)
-
-        // Current Closing Date (for this invoice):
-        // It's the closing day in THIS month (or previous month if closing > due, unlikely but possible).
-        // Usually, Invoice Due Jan 10th comes from Closing Jan 1st.
-        // Invoice Due Jan 5th might come from Closing Dec 25th (Prev Month).
-
         let cycleEndDate = new Date(year, month, closingDay)
-        // If Closing Date is AFTER Due Date, then the cycle for THIS Due Date actually ended last month.
-        // e.g. Due 5th, Closing 25th.
-        // Due Jan 5th -> Closing Dec 25th.
         if (closingDay >= day) {
           cycleEndDate = new Date(year, month - 1, closingDay)
         }
 
-        // Cycle Start Date: The day after the PREVIOUS closing date.
-        // Previous Closing Date is 1 month before Cycle End Date.
         const cycleStartDate = new Date(cycleEndDate)
         cycleStartDate.setMonth(cycleStartDate.getMonth() - 1)
-        cycleStartDate.setDate(cycleStartDate.getDate() + 1) // Start is day AFTER closing
+        cycleStartDate.setDate(cycleStartDate.getDate() + 1)
 
-        // Set times to cover full days
         cycleStartDate.setHours(0, 0, 0, 0)
         cycleEndDate.setHours(23, 59, 59, 999)
 
-        // Find expenses for this card in this date range
         const cycleExpenses = transactions.filter((t) => {
           const tDate = new Date(t.date)
-
-          // Check if this is indeed a Credit transaction
-          // If it's Debit, it paid immediately, so NOT part of invoice.
-          // card is the card object from loop.
-          // Logic matches getDayDetails
           const isCreditOp = t.cardFunction === 'credit' || (card.type === 'credit' && t.cardFunction !== 'debit')
 
           return (
@@ -111,7 +65,7 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
             t.category !== "Transferência" &&
             tDate >= cycleStartDate &&
             tDate <= cycleEndDate &&
-            isCreditOp // Only Credit transactions go to invoice
+            isCreditOp
           )
         }).reduce((sum, t) => sum + Math.abs(t.amount), 0)
 
@@ -123,74 +77,6 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
 
     return invoices
   }
-
-  const getDayDetails = (day: number) => {
-    // 1. Regular Transactions (Income/Expense) for this day
-    const dayTransactions = transactions.filter((t) => {
-      const tDate = new Date(t.date)
-      return (
-        tDate.getDate() === day &&
-        tDate.getMonth() === month &&
-        tDate.getFullYear() === year
-      )
-    })
-
-    // Income
-    const income = dayTransactions
-      .filter((t) => t.type === "income")
-      .reduce((sum, t) => sum + t.amount, 0)
-
-    // Expenses
-    const expense = dayTransactions
-      .filter((t) => {
-        if (t.type !== "expense") return false
-
-        // Check if it's a credit card transaction
-        const card = cards.find(c => c.id === t.account)
-        if (card) {
-          // It is a Credit Operation if:
-          // 1. Explicitly marked as credit
-          // 2. OR Card is pure Credit (and not explicitly marked as debit)
-          // 3. OR Card is Both (defaults to debit unless marked credit? No, safely check explicit)
-          // Actually, let's match the logic used in user-context or safe default:
-          // If card is 'credit', default to credit.
-          // If card is 'both', ONLY if function is 'credit'. (Otherwise debit).
-          // If card is 'debit', always debit.
-
-          const isCreditOp = t.cardFunction === 'credit' || (card.type === 'credit' && t.cardFunction !== 'debit')
-
-          // If it IS a credit op, exclude it from Daily Expenses (it goes to invoice/yellow)
-          if (isCreditOp) return false
-        }
-
-        // Include Wallets + Debit Card Transactions
-        return true
-      })
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-
-    // Credit Card Purchases (Yellow)
-    const creditPurchases = dayTransactions
-      .filter((t) => {
-        if (t.type !== "expense") return false
-
-        const card = cards.find(c => c.id === t.account)
-        if (!card) return false // Wallet transactions are never Credit Purchases
-
-        const isCreditOp = t.cardFunction === 'credit' || (card.type === 'credit' && t.cardFunction !== 'debit')
-        return isCreditOp
-      })
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-
-    // 2. Invoices due on this day
-    const invoices = getInvoiceForDay(day)
-    const invoiceTotal = invoices.reduce((sum, inv) => sum + inv.amount, 0)
-
-    // Add Invoice total to Daily Expense (Cash Basis)
-    const totalExpense = expense + invoiceTotal
-
-    return { income, expense: totalExpense, creditPurchases, invoices }
-  }
-
 
   const days = []
   for (let i = 0; i < startingDayOfWeek; i++) {
@@ -207,22 +93,6 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
           <h3 className="text-base md:text-lg font-semibold">Calendário de Transações</h3>
           <p className="text-xs md:text-sm text-muted-foreground">Regime de Caixa (Faturas nos vencimentos)</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={previousMonth}
-            className="h-8 w-8 md:h-10 md:w-10 bg-transparent"
-          >
-            <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
-          </Button>
-          <span className="text-xs md:text-sm font-medium min-w-[100px] md:min-w-[140px] text-center">
-            {monthNames[month]} {year}
-          </span>
-          <Button variant="outline" size="icon" onClick={nextMonth} className="h-8 w-8 md:h-10 md:w-10 bg-transparent">
-            <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
-          </Button>
-        </div>
       </div>
 
       <TooltipProvider delayDuration={0}>
@@ -238,8 +108,6 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
               return <div key={`empty-${index}`} className="aspect-square" />
             }
 
-            // Updated Data Gathering Logic
-            // We now need detailed lists for Tooltips
             const dayTransactions = transactions.filter((t) => {
               const tDate = new Date(t.date)
               return (
@@ -249,47 +117,37 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
               )
             })
 
-            // 1. Income List
             const incomeList = dayTransactions.filter((t) => t.type === "income")
             const incomeTotal = incomeList.reduce((sum, t) => sum + t.amount, 0)
 
-            // 2. Expense List (Cash/Debit only)
             const expenseList = dayTransactions.filter((t) => {
               if (t.type !== 'expense') return false
               const card = cards.find(c => c.id === t.account)
               if (card) {
                 const isCreditOp = t.cardFunction === 'credit' || (card.type === 'credit' && t.cardFunction !== 'debit')
-                if (isCreditOp) return false // Exclude Credit Ops
+                if (isCreditOp) return false
               }
-              // Exclude Investments from 'Expense' (Red) category
               if (t.category === 'Investimentos') return false
-
               return true
             })
-            // 3. Investment List
+            
             const investmentList = dayTransactions.filter(t => t.type === 'expense' && t.category === 'Investimentos')
             const investmentTotal = investmentList.reduce((sum, t) => sum + Math.abs(t.amount), 0)
 
-            // 3. Credit Purchases List (Yellow)
-            // SHOW ONLY: First Installment (or Single) -> Show TOTAL Purchase Value
             const creditList = dayTransactions.filter((t) => {
               if (t.type !== 'expense') return false
               const card = cards.find(c => c.id === t.account)
               if (!card) return false
-              const isCreditOp = t.cardFunction === 'credit' || (card.type === 'credit' && t.cardFunction !== 'debit')
 
+              const isCreditOp = t.cardFunction === 'credit' || (card.type === 'credit' && t.cardFunction !== 'debit')
               if (!isCreditOp) return false
 
-              // Only show on the first installment (or if it's not an installment)
-              // If it has installments, we want to see the "Purchase Event" only once.
               if (t.installmentNumber && t.installmentNumber > 1) {
                 return false
               }
-
               return true
             })
 
-            // Calculate TOTAL Purchase Value (not just the installment value)
             const creditTotal = creditList.reduce((sum, t) => {
               const transactionTotal = (t.installmentsTotal && t.installmentsTotal > 1)
                 ? t.amount * t.installmentsTotal
@@ -297,21 +155,15 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
               return sum + Math.abs(transactionTotal)
             }, 0)
 
-            // 4. Invoices (Red)
             const dueInvoices = getInvoiceForDay(day)
             const invoiceTotal = dueInvoices.reduce((sum, i) => sum + i.amount, 0)
-
-            // Make sure to sum absolute values for expenses
             const expenseTotal = expenseList.reduce((sum, t) => sum + Math.abs(t.amount), 0)
-
-            // Total Daily Expense (Cash Basis)
             const totalDailyExpense = expenseTotal + invoiceTotal
 
             const hasTransactions = incomeTotal > 0 || totalDailyExpense > 0 || creditTotal > 0
             const isToday =
               day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()
 
-            // Helper for Premium Tooltip Content
             const TransactionTooltip = ({ title, items, total, colorClass, type }: { title: string, items: any[], total: number, colorClass: string, type: 'income' | 'expense' | 'credit' | 'investment' }) => (
               <TooltipContent className="p-0 border-0 shadow-xl rounded-lg overflow-hidden w-64 z-[60]">
                 <div className="bg-background border rounded-lg overflow-hidden shadow-2xl ring-1 ring-border/50">
@@ -346,7 +198,6 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
               </TooltipContent>
             )
 
-            // Combined Expense Items (Regular Expenses + Invoices)
             const combinedExpenseItems = [
               ...expenseList.map(t => ({ ...t, amount: Math.abs(t.amount) })),
               ...dueInvoices.map(inv => ({ description: `Fatura ${inv.card.name}`, amount: inv.amount, category: 'Cartão de Crédito', card: inv.card }))
@@ -363,7 +214,6 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
                 </span>
 
                 <div className="flex flex-col gap-0.5 w-full items-center overflow-hidden">
-
                   {/* INCOME */}
                   {incomeTotal > 0 && (
                     <Tooltip delayDuration={0}>

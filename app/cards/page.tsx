@@ -13,8 +13,10 @@ import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { getInvoiceAmountForMonth } from "@/lib/invoice-utils" // Import helper
 
 import { PayInvoiceDialog } from "@/components/dashboard/pay-invoice-dialog"
+import { InvoiceHistoryDialog } from "@/components/cards/invoice-history-dialog" // Import
 
 export default function CardsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -22,14 +24,22 @@ export default function CardsPage() {
   const [editingData, setEditingData] = useState<any>(null)
 
   // State for paying invoice
-  const [payingCard, setPayingCard] = useState<{ card: any; amount: number } | null>(null)
+  // Updated to include month/year for history payments
+  const [payingCard, setPayingCard] = useState<{ card: any; amount: number; month?: number; year?: number } | null>(null)
 
-  const { cards, wallets, currentUser, deleteCard, deleteWallet } = useUser()
+  // State for viewing history
+  const [historyCard, setHistoryCard] = useState<any>(null)
+
+  const { cards, wallets, currentUser, transactions, deleteCard, deleteWallet } = useUser() // Added transactions
   const router = useRouter()
   const { toast } = useToast()
 
   const canAddWallet = currentUser?.plan === "pro" || wallets.length < 1
   const canAddCard = currentUser?.plan === "pro" || cards.length < 2
+
+  const currentDate = new Date()
+  const currentMonth = currentDate.getMonth()
+  const currentYear = currentDate.getFullYear()
 
   const handleAddCard = () => {
     if (!canAddCard) {
@@ -269,27 +279,37 @@ export default function CardsPage() {
           )}
 
           <div className="grid gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {cards.map((card) => (
-              <CreditCardDisplay
-                key={card.id}
-                name={card.name}
-                lastDigits={card.lastDigits}
-                brand={card.brand}
-                limit={card.limit || card.creditLimit || 0}
-                used={(card.limit || card.creditLimit || 0) - ((card.limit || card.creditLimit || 0) - (card.used || 0))}
-                balance={card.balance}
-                color={card.color}
-                dueDate={card.dueDay || card.dueDate || 0}
-                hasCredit={card.hasCredit}
-                hasDebit={card.hasDebit}
-                onEdit={() => handleEditCard(card)}
-                onDelete={() => handleDeleteCard(card.id)}
-                onPayInvoice={() => {
-                  const usedAmount = (card.limit || card.creditLimit || 0) - ((card.limit || card.creditLimit || 0) - (card.used || 0));
-                  setPayingCard({ card, amount: usedAmount });
-                }}
-              />
-            ))}
+            {cards.map((card) => {
+              // Calculate Invoice Amount for THIS month
+              const invoiceAmount = getInvoiceAmountForMonth(card, currentYear, currentMonth, transactions);
+
+              // Reference Date: roughly the 1st of current month (for display name like "Dezembro 2025")
+              const invoiceDate = new Date(currentYear, currentMonth, 1);
+
+              return (
+                <CreditCardDisplay
+                  key={card.id}
+                  name={card.name}
+                  lastDigits={card.lastDigits}
+                  brand={card.brand}
+                  limit={card.limit || card.creditLimit || 0}
+                  used={(card.limit || card.creditLimit || 0) - ((card.limit || card.creditLimit || 0) - (card.used || 0))}
+                  balance={card.balance}
+                  color={card.color}
+                  dueDate={card.dueDay || card.dueDate || 0}
+                  hasCredit={card.hasCredit}
+                  hasDebit={card.hasDebit}
+                  invoiceAmount={invoiceAmount}
+                  invoiceDate={invoiceDate}
+                  onEdit={() => handleEditCard(card)}
+                  onDelete={() => handleDeleteCard(card.id)}
+                  onPayInvoice={() => {
+                    setPayingCard({ card, amount: invoiceAmount, month: currentMonth, year: currentYear });
+                  }}
+                  onViewHistory={() => setHistoryCard(card)}
+                />
+              )
+            })}
           </div>
         </TabsContent>
       </Tabs>
@@ -301,16 +321,29 @@ export default function CardsPage() {
         initialData={editingData}
       />
 
+      {historyCard && (
+        <InvoiceHistoryDialog
+          open={!!historyCard}
+          onOpenChange={(open) => !open && setHistoryCard(null)}
+          card={historyCard}
+          transactions={transactions}
+          onPayInvoice={(month, year, amount) => {
+            setPayingCard({ card: historyCard, amount, month, year })
+            setHistoryCard(null)
+          }}
+        />
+      )}
+
       {payingCard && (
         <PayInvoiceDialog
           open={!!payingCard}
           onOpenChange={(op) => !op && setPayingCard(null)}
           card={payingCard.card}
           amount={payingCard.amount}
-          month={new Date().getMonth()}
-          year={new Date().getFullYear()}
+          month={payingCard.month ?? currentMonth}
+          year={payingCard.year ?? currentYear}
         />
       )}
-    </div >
+    </div>
   )
 }

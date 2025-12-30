@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 interface CreditCardDisplayProps {
   name: string
@@ -20,9 +22,12 @@ interface CreditCardDisplayProps {
   hasDebit: boolean
   userName?: string
   userAvatar?: string
+  invoiceAmount?: number
+  invoiceDate?: Date
   onEdit?: () => void
   onDelete?: () => void
   onPayInvoice?: () => void
+  onViewHistory?: () => void
 }
 
 export function CreditCardDisplay({
@@ -38,12 +43,20 @@ export function CreditCardDisplay({
   hasDebit,
   userName,
   userAvatar,
+  invoiceAmount,
+  invoiceDate,
   onEdit,
   onDelete,
   onPayInvoice,
+  onViewHistory,
 }: CreditCardDisplayProps) {
   const available = limit - used
   const usagePercentage = limit > 0 ? (used / limit) * 100 : 0
+
+  // Decide what to show as "Invoice Value". 
+  // If invoiceAmount is explicitly provided (e.g. current month invoice), use it.
+  // Otherwise fallback to 'used' (Total Debt).
+  const displayInvoiceValue = invoiceAmount !== undefined ? invoiceAmount : used
 
   return (
     <Card className="hover:shadow-lg transition-all duration-300">
@@ -117,15 +130,6 @@ export function CreditCardDisplay({
             <div className="pb-2 border-b">
               <div className="flex justify-between items-center mb-1">
                 <p className="text-xs text-muted-foreground">Limite do Cartão</p>
-                {used > 0 && onPayInvoice && (
-                  <Button
-                    variant="link"
-                    className="h-auto p-0 text-xs text-primary underline"
-                    onClick={onPayInvoice}
-                  >
-                    Pagar Fatura
-                  </Button>
-                )}
               </div>
               <p className="text-lg font-semibold text-primary">
                 R$ {limit.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
@@ -140,18 +144,14 @@ export function CreditCardDisplay({
               <Progress
                 value={usagePercentage}
                 className="h-2"
-                style={
-                  {
-                    "--progress-background": usagePercentage > 80 ? "#dc2626" : "#28A745",
-                  } as React.CSSProperties
-                }
+                indicatorClassName={usagePercentage > 80 ? "bg-red-600" : "bg-emerald-500"}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-2 border-t">
               <div>
                 <p className="text-xs text-muted-foreground">Disponível</p>
-                <p className="text-lg font-semibold text-[#28A745]">R$ {available.toLocaleString("pt-BR")}</p>
+                <p className="text-lg font-semibold text-emerald-600">R$ {available.toLocaleString("pt-BR")}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Vencimento</p>
@@ -159,10 +159,42 @@ export function CreditCardDisplay({
               </div>
             </div>
 
-            <div className="pt-2 border-t">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Fatura atual</span>
-                <span className="text-lg font-bold text-destructive">R$ {used.toLocaleString("pt-BR")}</span>
+            <div className="pt-4 border-t flex flex-col gap-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="text-sm text-muted-foreground block">Fatura atual</span>
+                  {invoiceDate && (
+                    <span className="text-xs font-medium text-muted-foreground capitalize">
+                      {format(invoiceDate, "MMMM/yyyy", { locale: ptBR })}
+                    </span>
+                  )}
+                </div>
+                <div className="text-right">
+                  <span className="text-xl font-bold text-destructive">
+                    R$ {displayInvoiceValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                {onViewHistory && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 text-xs h-9"
+                    onClick={onViewHistory}
+                  >
+                    Ver histórico
+                  </Button>
+                )}
+                {displayInvoiceValue > 0 && onPayInvoice && (
+                  <Button
+                    variant="destructive"
+                    className="flex-1 h-9 text-xs font-semibold"
+                    onClick={onPayInvoice}
+                  >
+                    Pagar fatura
+                  </Button>
+                )}
               </div>
             </div>
           </>
