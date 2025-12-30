@@ -103,6 +103,7 @@ export function BudgetCard({
             <Progress
               value={Math.min(percentage, 100)}
               className="h-3 rounded-full bg-muted"
+              indicatorClassName="bg-[var(--progress-background)]"
               style={
                 {
                   "--progress-background": isOverBudget ? "#ef4444" : color,
