@@ -51,7 +51,7 @@ export default function BudgetsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-full overflow-x-hidden p-6 pb-20 lg:pb-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden p-3 md:p-6 pb-20 lg:pb-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1 min-w-0">
           <h1 className="text-xl md:text-3xl font-bold text-foreground truncate">Orçamentos & Categorias</h1>

@@ -54,7 +54,7 @@ export function BudgetCard({
   return (
     <Card className="hover:shadow-lg transition-all duration-300 overflow-hidden">
       <div
-        className="relative h-32 p-6 text-white"
+        className="relative h-24 p-6 text-white"
         style={{
           background: color,
         }}
