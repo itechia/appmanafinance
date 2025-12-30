@@ -28,7 +28,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
               borderRadius: "8px",
               fontSize: "12px",
             }}
-            formatter={(value: number) => formatCurrency(value)}
+            formatter={(value: any) => formatCurrency(Number(value || 0))}
           />
           <Legend
             wrapperStyle={{ fontSize: "11px" }}
