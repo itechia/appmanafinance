@@ -1,4 +1,4 @@
-import Dexie from 'dexie'
+import Dexie, { type EntityTable } from 'dexie'
 import type {
     Workspace, WorkspaceMember, Category, Budget,
     Transaction, Card, Wallet, Goal, Notification, NotificationPreferences
@@ -6,16 +6,16 @@ import type {
 
 // Define the database instance with table types
 interface ManaFinanceDatabase extends Dexie {
-    workspaces: Dexie.EntityTable<Workspace, 'id'>
-    members: Dexie.EntityTable<WorkspaceMember, 'id'>
-    categories: Dexie.EntityTable<Category, 'id'>
-    budgets: Dexie.EntityTable<Budget, 'id'>
-    transactions: Dexie.EntityTable<Transaction, 'id'>
-    cards: Dexie.EntityTable<Card, 'id'>
-    wallets: Dexie.EntityTable<Wallet, 'id'>
-    goals: Dexie.EntityTable<Goal, 'id'>
-    notifications: Dexie.EntityTable<Notification, 'id'>
-    preferences: Dexie.EntityTable<NotificationPreferences & { id: string }, 'id'>
+    workspaces: EntityTable<Workspace, 'id'>
+    members: EntityTable<WorkspaceMember, 'id'>
+    categories: EntityTable<Category, 'id'>
+    budgets: EntityTable<Budget, 'id'>
+    transactions: EntityTable<Transaction, 'id'>
+    cards: EntityTable<Card, 'id'>
+    wallets: EntityTable<Wallet, 'id'>
+    goals: EntityTable<Goal, 'id'>
+    notifications: EntityTable<Notification, 'id'>
+    preferences: EntityTable<NotificationPreferences & { id: string }, 'id'>
 }
 
 export const db = new Dexie('ManaFinanceDB') as ManaFinanceDatabase
