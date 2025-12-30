@@ -95,7 +95,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "8px",
                 }}
-                formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+                formatter={(value: any) => `R$ ${Number(value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -130,7 +130,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "8px",
                 }}
-                formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+                formatter={(value: any) => `R$ ${Number(value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
               />
             </PieChart>
           </ResponsiveContainer>
