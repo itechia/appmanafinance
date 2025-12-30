@@ -117,39 +117,39 @@ export function CategoryManager() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {categoriesWithCounts.map((category) => (
-          <Card key={category.id} className="p-4">
+          <Card key={category.id} className="p-4 hover:shadow-md transition-all group overflow-hidden border-l-4" style={{ borderLeftColor: category.color }}>
             <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div
-                  className="flex h-12 w-12 items-center justify-center rounded-lg text-2xl"
-                  style={{ backgroundColor: `${category.color}20` }}
+                  className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl shadow-sm"
+                  style={{ backgroundColor: `${category.color}15`, color: category.color }}
                 >
                   {category.icon}
                 </div>
                 <div>
-                  <h4 className="font-semibold">{category.name}</h4>
-                  <p className="text-sm text-muted-foreground">{category.transactionCount} transações</p>
+                  <h4 className="font-bold text-base leading-tight mb-1">{category.name}</h4>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${category.type === "income" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
+                      {category.type === "income" ? "Receita" : "Despesa"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{category.transactionCount} transações</span>
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(category)}>
-                  <Pencil className="h-3.5 w-3.5" />
+
+              <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" onClick={() => handleEdit(category)}>
+                  <Pencil className="h-4 w-4 text-muted-foreground" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-destructive"
+                  className="h-8 w-8 hover:bg-red-50"
                   onClick={() => handleDelete(category.id, category.name)}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-4 w-4 text-red-400" />
                 </Button>
               </div>
-            </div>
-            <div className="mt-3 flex items-center gap-2">
-              <Tag className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground capitalize">
-                {category.type === "income" ? "Receita" : "Despesa"}
-              </span>
             </div>
           </Card>
         ))}

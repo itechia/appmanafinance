@@ -90,6 +90,31 @@ export default function BudgetsPage() {
         </TabsList>
 
         <TabsContent value="budgets" className="space-y-3 md:space-y-6">
+
+          {/* Summary Card for Mobile/Desktop */}
+          {budgetStats.length > 0 && (
+            <div className="grid gap-4 sm:grid-cols-3 mb-6 p-4 md:p-6 bg-card rounded-xl border shadow-sm">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Total Orçado</p>
+                <p className="text-2xl font-bold text-primary">
+                  R$ {budgetStats.reduce((acc, curr) => acc + curr.limit, 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Total Gasto</p>
+                <p className="text-2xl font-bold text-destructive">
+                  R$ {budgetStats.reduce((acc, curr) => acc + curr.spent, 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Disponível Total</p>
+                <p className="text-2xl font-bold text-emerald-600">
+                  R$ {Math.max(0, budgetStats.reduce((acc, curr) => acc + (curr.limit - curr.spent), 0)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="grid gap-3 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {budgetStats.map((budget) => (
               <BudgetCard

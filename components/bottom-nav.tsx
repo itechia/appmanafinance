@@ -24,7 +24,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
-      <div className="flex items-center justify-around px-1 py-2 max-w-screen-xl mx-auto">
+      <div className="flex items-center justify-around px-2 py-3 max-w-screen-xl mx-auto">
         {navigation.map((item) => {
           const isActive = pathname === item.href
           return (
@@ -32,15 +32,15 @@ export function BottomNav() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 sm:gap-1 rounded-lg transition-all",
-                "px-1 sm:px-3 md:px-4 py-1.5 sm:py-2 min-w-[44px] sm:min-w-[70px] md:min-w-[80px]",
+                "flex flex-col items-center justify-center gap-1 sm:gap-1 rounded-lg transition-all",
+                "px-2 sm:px-3 md:px-4 py-2 sm:py-2 min-w-[56px] sm:min-w-[70px] md:min-w-[80px]",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
-              <item.icon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
-              <span className="hidden sm:block text-[9px] md:text-[10px] font-medium truncate max-w-full leading-tight">
+              <item.icon className="h-5 w-5 sm:h-6 sm:w-6 md:h-6 md:w-6" />
+              <span className="hidden sm:block text-[10px] md:text-[11px] font-medium truncate max-w-full leading-tight">
                 {item.name}
               </span>
             </Link>
