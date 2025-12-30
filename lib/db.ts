@@ -1,45 +1,47 @@
-import Dexie, { type Table } from 'dexie'
+import Dexie from 'dexie'
 import type {
-    User, Workspace, WorkspaceMember, Category, Budget,
+    Workspace, WorkspaceMember, Category, Budget,
     Transaction, Card, Wallet, Goal, Notification, NotificationPreferences
 } from './types/app-types'
 
-export class ManaFinanceDB extends Dexie {
-    workspaces!: Table<Workspace>
-    members!: Table<WorkspaceMember>
-    categories!: Table<Category>
-    budgets!: Table<Budget>
-    transactions!: Table<Transaction>
-    cards!: Table<Card>
-    wallets!: Table<Wallet>
-    goals!: Table<Goal>
-    notifications!: Table<Notification>
-    preferences!: Table<NotificationPreferences & { id: string }>
-
-    constructor() {
-        super('ManaFinanceDB')
-
-        // Define tables and indexes
-        this.version(2).stores({
-            workspaces: 'id, ownerId, mode',
-            members: 'id, workspaceId, userId, role',
-            categories: 'id, userId, type',
-            budgets: 'id, userId, period',
-            transactions: 'id, userId, date, category, type, account, recurrenceId, installmentId',
-            cards: 'id, userId',
-            wallets: 'id, userId',
-            goals: 'id, userId',
-            notifications: 'id, date, read',
-            preferences: 'id' // Singleton, id='default'
-        })
-    }
-
-    /* Helper to reset DB */
-    async resetDatabase() {
-        await this.transaction('rw', this.tables, async () => {
-            await Promise.all(this.tables.map(table => table.clear()))
-        })
-    }
+// Define the database instance with table types
+interface ManaFinanceDatabase extends Dexie {
+    workspaces: Dexie.EntityTable<Workspace, 'id'>
+    members: Dexie.EntityTable<WorkspaceMember, 'id'>
+    categories: Dexie.EntityTable<Category, 'id'>
+    budgets: Dexie.EntityTable<Budget, 'id'>
+    transactions: Dexie.EntityTable<Transaction, 'id'>
+    cards: Dexie.EntityTable<Card, 'id'>
+    wallets: Dexie.EntityTable<Wallet, 'id'>
+    goals: Dexie.EntityTable<Goal, 'id'>
+    notifications: Dexie.EntityTable<Notification, 'id'>
+    preferences: Dexie.EntityTable<NotificationPreferences & { id: string }, 'id'>
 }
 
-export const db = (typeof window !== 'undefined' ? new ManaFinanceDB() : undefined) as ManaFinanceDB
+export const db = new Dexie('ManaFinanceDB') as ManaFinanceDatabase
+
+    // Define tables and indexes
+    ; (db as any).version(2).stores({
+        workspaces: 'id, ownerId, mode',
+        members: 'id, workspaceId, userId, role',
+        categories: 'id, userId, type',
+        budgets: 'id, userId, period',
+        transactions: 'id, userId, date, category, type, account, recurrenceId, installmentId',
+        cards: 'id, userId',
+        wallets: 'id, userId',
+        goals: 'id, userId',
+        notifications: 'id, date, read',
+        preferences: 'id'
+    })
+
+// Helper to reset DB
+export async function resetDatabase() {
+    const tables = [
+        db.workspaces, db.members, db.categories, db.budgets,
+        db.transactions, db.cards, db.wallets, db.goals,
+        db.notifications, db.preferences
+    ]
+    await (db as any).transaction('rw', tables, async () => {
+        await Promise.all(tables.map(table => (table as any).clear()))
+    })
+}

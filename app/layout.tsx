@@ -14,14 +14,31 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Maná Finance",
   description: "Sua prosperidade financeira começa aqui",
+  manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/favicon.ico", sizes: "any" },
     ],
-    apple: "/apple-touch-icon.png",
+    apple: "/apple-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Maná Finance",
+  },
+  formatDetection: {
+    telephone: false,
   },
   generator: 'v0.app'
+}
+
+export const viewport = {
+  themeColor: "#10b981",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 import { Toaster } from "@/components/ui/toaster"

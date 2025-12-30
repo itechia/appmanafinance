@@ -160,7 +160,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 db.preferences
               ]
 
-              await db.transaction('rw', tables, async () => {
+              await (db as any).transaction('rw', tables, async () => {
                 if (parsed.workspaces?.length) await db.workspaces.bulkAdd(parsed.workspaces)
                 if (parsed.wallets?.length) await db.wallets.bulkAdd(parsed.wallets)
                 if (parsed.cards?.length) await db.cards.bulkAdd(parsed.cards)
@@ -263,7 +263,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const createdTransactions: Transaction[] = []
 
     try {
-      await db.transaction('rw', [db.transactions, db.wallets, db.cards], async () => {
+      await (db as any).transaction('rw', [db.transactions, db.wallets, db.cards], async () => {
 
         for (let i = 0; i < count; i++) {
           const currentTxId = `tx-${Date.now()}-${i}` // Ensure unique ID
@@ -408,7 +408,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     if (!oldTx) return
 
     try {
-      await db.transaction('rw', [db.transactions, db.wallets, db.cards], async () => {
+      await (db as any).transaction('rw', [db.transactions, db.wallets, db.cards], async () => {
         // 1. Revert Balance impact of OLD transaction if it was completed
         if (oldTx.status === 'completed') {
           await updateBalancesForTransaction(oldTx, true) // Reverse = true
@@ -436,11 +436,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
           // Find future transactions
           const futureTxs = await db.transactions
             .where('recurrenceId').equals(oldTx.recurrenceId)
-            .filter(t => t.date > oldTx.date)
+            .filter((t: Transaction) => t.date > oldTx.date)
             .toArray()
 
-          // Delete them
-          const deleteIds = futureTxs.map(t => t.id)
+          const deleteIds = futureTxs.map((t: Transaction) => t.id)
           await db.transactions.bulkDelete(deleteIds)
 
           // Regenerate
@@ -582,7 +581,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
         // Check if we already have history for this prev month?
         const existingHistory = oldBudget.history || []
-        const hasEntry = existingHistory.some(h => h.month === prevMonthKey)
+        const hasEntry = existingHistory.some((h: any) => h.month === prevMonthKey)
 
         if (!hasEntry) {
           const newHistory = [
@@ -780,7 +779,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         refreshData,
         recalculateBalances: () => { refreshData() },
         clearAllData: async () => {
-          if (db) await db.delete()
+          if (db) await (db as any).delete()
           window.location.href = "/"
         },
         isMultiUserMode: false,

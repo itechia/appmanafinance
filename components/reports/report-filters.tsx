@@ -50,7 +50,7 @@ export function ReportFiltersComponent({ filters, onFiltersChange, transactions 
     onFiltersChange({ ...filters, accounts: newAccounts })
   }
 
-  const toggleType = (type: "income" | "expense") => {
+  const toggleType = (type: "income" | "expense" | "transfer") => {
     const newTypes = filters.types.includes(type) ? filters.types.filter((t) => t !== type) : [...filters.types, type]
     onFiltersChange({ ...filters, types: newTypes })
   }

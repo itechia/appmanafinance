@@ -9,7 +9,7 @@ export interface ReportFilters {
   userIds: string[]
   categories: string[]
   accounts: string[]
-  types: ("income" | "expense")[]
+  types: ("income" | "expense" | "transfer")[]
 }
 
 export interface ReportMetrics {
@@ -77,6 +77,7 @@ export function calculateReportMetrics(transactions: Transaction[], filters: Rep
   // Category breakdown
   const categoryMap = new Map<string, { amount: number; count: number; type: "income" | "expense" }>()
   filteredTransactions.forEach((t) => {
+    if (t.type === "transfer") return
     const current = categoryMap.get(t.category) || { amount: 0, count: 0, type: t.type }
     categoryMap.set(t.category, {
       amount: current.amount + Math.abs(t.amount),
@@ -149,10 +150,10 @@ export function calculateReportMetrics(transactions: Transaction[], filters: Rep
   // User breakdown
   const userMap = new Map<string, { userName: string; income: number; expense: number; transactions: number }>()
   filteredTransactions.forEach((t) => {
-    const current = userMap.get(t.userId) || { userName: t.userName, income: 0, expense: 0, transactions: 0 }
+    const current = userMap.get(t.userId) || { userName: t.userName || 'Usuário', income: 0, expense: 0, transactions: 0 }
     if (t.type === "income") {
       current.income += Math.abs(t.amount)
-    } else {
+    } else if (t.type === "expense") {
       current.expense += Math.abs(t.amount)
     }
     current.transactions += 1

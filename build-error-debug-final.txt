@@ -1,0 +1,25 @@
+
+> my-v0-project@0.1.0 build
+> next build
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.0 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ✓ Compiled successfully in 29.1s
+   Running TypeScript ...
+Failed to compile.
+
+./lib/db.ts:22:14
+Type error: Property 'version' does not exist on type 'ManaFinanceDB'.
+
+[0m [90m 20 |[39m         [36msuper[39m([32m'ManaFinanceDB'[39m)
+ [90m 21 |[39m
+[31m[1m>[22m[39m[90m 22 |[39m         [36mthis[39m[33m.[39mversion([35m2[39m)[33m.[39mstores({
+ [90m    |[39m              [31m[1m^[22m[39m
+ [90m 23 |[39m             workspaces[33m:[39m [32m'id, ownerId, mode'[39m[33m,[39m
+ [90m 24 |[39m             members[33m:[39m [32m'id, workspaceId, userId, role'[39m[33m,[39m
+ [90m 25 |[39m             categories[33m:[39m [32m'id, userId, type'[39m[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null
