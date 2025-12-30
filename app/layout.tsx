@@ -20,7 +20,7 @@ export const metadata: Metadata = {
       { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/favicon.ico", sizes: "any" },
     ],
-    apple: "/apple-icon.png",
+    apple: "/favicon.svg",
   },
   appleWebApp: {
     capable: true,
