@@ -37,7 +37,7 @@ export function CategoryChart({ expenseCategories, incomeCategories }: CategoryC
                   borderRadius: "8px",
                   fontSize: "12px",
                 }}
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value: any) => formatCurrency(Number(value || 0))}
               />
               <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
                 {expenseCategories.map((entry, index) => (
@@ -59,7 +59,7 @@ export function CategoryChart({ expenseCategories, incomeCategories }: CategoryC
                   borderRadius: "8px",
                   fontSize: "12px",
                 }}
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value: any) => formatCurrency(Number(value || 0))}
               />
               <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
                 {incomeCategories.map((entry, index) => (
