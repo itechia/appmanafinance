@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { PLAN_FEATURES } from "@/lib/types/subscription"
 import { useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { cn, formatCurrency } from "@/lib/utils"
 
 export default function PricingPage() {
   const [interval, setInterval] = useState<"monthly" | "yearly">("monthly")
@@ -90,7 +90,7 @@ export default function PricingPage() {
                 Essencial para começar a organizar suas contas.
               </CardDescription>
               <div className="pt-6">
-                <span className="text-4xl font-bold">R$ 0</span>
+                <span className="text-4xl font-bold">{formatCurrency(0)}</span>
                 <span className="text-muted-foreground ml-2">/mês</span>
               </div>
             </CardHeader>
@@ -132,17 +132,17 @@ export default function PricingPage() {
               <div className="pt-6">
                 {interval === "monthly" ? (
                   <div className="flex items-baseline">
-                    <span className="text-4xl font-bold">R$ {monthlyPrice.toFixed(2)}</span>
+                    <span className="text-4xl font-bold">{formatCurrency(monthlyPrice)}</span>
                     <span className="text-muted-foreground ml-2">/mês</span>
                   </div>
                 ) : (
                   <div className="space-y-1">
                     <div className="flex items-baseline">
-                      <span className="text-4xl font-bold">R$ {yearlyPrice.toFixed(2)}</span>
+                      <span className="text-4xl font-bold">{formatCurrency(yearlyPrice)}</span>
                       <span className="text-muted-foreground ml-2">/ano</span>
                     </div>
                     <p className="text-sm text-green-600 dark:text-green-400 font-medium">
-                      Economize R$ {(monthlyPrice * 12 - yearlyPrice).toFixed(2)} por ano
+                      Economize {formatCurrency(monthlyPrice * 12 - yearlyPrice)} por ano
                     </p>
                   </div>
                 )}

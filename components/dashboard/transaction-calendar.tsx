@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import type { Transaction, Card as CreditCard, Wallet } from "@/lib/types/app-types"
 import { PayInvoiceDialog } from "@/components/dashboard/pay-invoice-dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { formatCurrency } from "@/lib/utils"
 
 interface TransactionCalendarProps {
   transactions: Transaction[]
@@ -130,7 +131,7 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
               if (t.category === 'Investimentos') return false
               return true
             })
-            
+
             const investmentList = dayTransactions.filter(t => t.type === 'expense' && t.category === 'Investimentos')
             const investmentTotal = investmentList.reduce((sum, t) => sum + Math.abs(t.amount), 0)
 
@@ -172,7 +173,7 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
                       type === 'investment' ? 'bg-cyan-500' : 'bg-amber-500'
                     }`}>
                     <span>{title}</span>
-                    <span>{total.toLocaleString("pt-BR", { style: 'currency', currency: 'BRL' })}</span>
+                    <span>{formatCurrency(total)}</span>
                   </div>
                   <div className="p-2 space-y-2 bg-card/95 backdrop-blur-sm">
                     <div className="max-h-[200px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
@@ -181,7 +182,7 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
                           <div className="flex justify-between items-start gap-2">
                             <span className="text-xs font-medium truncate text-foreground/90">{item.description || item.card?.name}</span>
                             <span className={`text-xs font-bold whitespace-nowrap ${colorClass}`}>
-                              {item.displayValue || item.amount.toLocaleString("pt-BR", { style: 'currency', currency: 'BRL' })}
+                              {item.displayValue || formatCurrency(item.amount)}
                             </span>
                           </div>
                           <div className="flex justify-between items-center text-[10px] text-muted-foreground">
@@ -281,7 +282,7 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
                           ...t,
                           amount: Math.abs(t.amount),
                           displayValue: (t.installmentsTotal && t.installmentsTotal > 1)
-                            ? `${t.installmentsTotal}x ${Math.abs(t.amount).toLocaleString("pt-BR", { style: 'currency', currency: 'BRL' })}`
+                            ? `${t.installmentsTotal}x ${formatCurrency(Math.abs(t.amount))}`
                             : undefined
                         }))}
                         total={creditTotal}

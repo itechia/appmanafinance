@@ -15,6 +15,7 @@ import { calculateBalance } from "@/lib/balance-calculator"
 import { useSidebar } from "@/lib/sidebar-context"
 import { cn } from "@/lib/utils"
 import { getInvoiceAmountForMonth, getInvoiceCycleForMonth } from "@/lib/invoice-utils"
+import { formatCurrency } from "@/lib/utils"
 
 export default function DashboardPage() {
   const { currentUser, transactions, goals, cards, wallets, categories, budgets, selectedDate: currentDate, setSelectedDate } = useUser()
@@ -232,9 +233,7 @@ export default function DashboardPage() {
   // Include dual function cards in debit list as well so their balance counts towards total wallet balance
   const debitCards = cards.filter((c) => c.hasDebit)
 
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  }
+
 
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -275,7 +274,7 @@ export default function DashboardPage() {
         <div className="grid gap-2 md:gap-3 lg:gap-4 grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Saldo Total"
-            value={`R$ ${formatCurrency(stats.totalBalance)}`}
+            value={formatCurrency(stats.totalBalance)}
             icon={WalletIcon}
             trend={{
               value: `${Math.abs(stats.balanceChange).toFixed(1)}%`,
@@ -285,7 +284,7 @@ export default function DashboardPage() {
           />
           <StatCard
             title="Receitas"
-            value={`R$ ${formatCurrency(stats.totalIncome)}`}
+            value={formatCurrency(stats.totalIncome)}
             icon={TrendingUp}
             trend={{
               value: `${Math.abs(stats.incomeChange).toFixed(1)}%`,
@@ -295,7 +294,7 @@ export default function DashboardPage() {
           />
           <StatCard
             title="Despesas"
-            value={`R$ ${formatCurrency(stats.totalExpenses)}`}
+            value={formatCurrency(stats.totalExpenses)}
             icon={TrendingDown}
             trend={{
               value: `${Math.abs(stats.expenseChange).toFixed(1)}%`,
@@ -305,7 +304,7 @@ export default function DashboardPage() {
           />
           <StatCard
             title="Saldo Mês"
-            value={`R$ ${formatCurrency(stats.budgetRemaining)}`}
+            value={formatCurrency(stats.budgetRemaining)}
             icon={Target}
             colorClass="text-primary"
           />

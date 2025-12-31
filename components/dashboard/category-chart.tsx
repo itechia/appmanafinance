@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card"
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts"
+import { formatCurrency } from "@/lib/utils"
 
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, value }: any) => {
   const RADIAN = Math.PI / 180
@@ -11,12 +12,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 
   if (percent < 0.05) return null
 
-  const formattedValue = new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(value)
+  const formattedValue = formatCurrency(value)
 
   return (
     <text
@@ -95,7 +91,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "8px",
                 }}
-                formatter={(value: any) => `R$ ${Number(value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+                formatter={(value: any) => formatCurrency(Number(value || 0))}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -130,7 +126,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "8px",
                 }}
-                formatter={(value: any) => `R$ ${Number(value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+                formatter={(value: any) => formatCurrency(Number(value || 0))}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -147,7 +143,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
                 <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
                   <span className="text-xs md:text-sm text-muted-foreground">{item.percentage}%</span>
                   <span className="text-xs md:text-sm font-semibold">
-                    R$ {item.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(item.value)}
                   </span>
                 </div>
               </div>

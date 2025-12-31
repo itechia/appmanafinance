@@ -9,6 +9,7 @@ import { useUser } from "@/lib/user-context"
 import { toast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { formatCurrency } from "@/lib/utils"
 
 interface PayInvoiceDialogProps {
     open: boolean
@@ -88,7 +89,7 @@ export function PayInvoiceDialog({ open, onOpenChange, card, amount, month, year
                     <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                         <span className="text-sm font-medium">Valor da Fatura</span>
                         <span className="text-xl font-bold text-destructive">
-                            R$ {amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                            {formatCurrency(amount)}
                         </span>
                     </div>
 
@@ -105,7 +106,7 @@ export function PayInvoiceDialog({ open, onOpenChange, card, amount, month, year
                                             <span>{account.icon || '💳'}</span>
                                             <span>{account.name}</span>
                                             <span className="text-muted-foreground ml-auto text-xs">
-                                                ({account.type}) R$ {account.balance.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                                                ({account.type}) {formatCurrency(account.balance)}
                                             </span>
                                         </div>
                                     </SelectItem>

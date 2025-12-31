@@ -15,7 +15,7 @@ import { useEffect, useState as useStateEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator"
 import { isPasswordValid } from "@/lib/utils/password-validator"
-import { localStorage } from "@/lib/storage-helpers"
+// import { localStorage } from "@/lib/storage-helpers"
 
 type ViewMode = "login" | "register" | "reset"
 
@@ -36,8 +36,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     setMounted(true)
-    const rememberedEmail = localStorage.get<string>("rememberedEmail")
-    const rememberedPassword = localStorage.get<string>("rememberedPassword")
+    const rememberedEmail = window.localStorage.getItem("rememberedEmail")
+    const rememberedPassword = window.localStorage.getItem("rememberedPassword")
     if (rememberedEmail && rememberedPassword) {
       setEmail(rememberedEmail)
       setPassword(rememberedPassword)
@@ -53,11 +53,11 @@ export default function LoginPage() {
     try {
       if (viewMode === "login") {
         if (rememberMe) {
-          localStorage.set("rememberedEmail", email)
-          localStorage.set("rememberedPassword", password)
+          window.localStorage.setItem("rememberedEmail", email)
+          window.localStorage.setItem("rememberedPassword", password)
         } else {
-          localStorage.remove("rememberedEmail")
-          localStorage.remove("rememberedPassword")
+          window.localStorage.removeItem("rememberedEmail")
+          window.localStorage.removeItem("rememberedPassword")
         }
 
         const result = await login(email, password)

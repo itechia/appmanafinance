@@ -9,6 +9,7 @@ import { CategoryManager } from "@/components/budgets/category-manager"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useUser } from "@/lib/user-context"
 import { calculateBudgetSpent, getBudgetLimitForMonth } from "@/lib/budget-utils"
+import { formatCurrency } from "@/lib/utils"
 
 export default function BudgetsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -97,19 +98,19 @@ export default function BudgetsPage() {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Total Orçado</p>
                 <p className="text-2xl font-bold text-primary">
-                  R$ {budgetStats.reduce((acc, curr) => acc + curr.limit, 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  {formatCurrency(budgetStats.reduce((acc, curr) => acc + curr.limit, 0))}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Total Gasto</p>
                 <p className="text-2xl font-bold text-destructive">
-                  R$ {budgetStats.reduce((acc, curr) => acc + curr.spent, 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  {formatCurrency(budgetStats.reduce((acc, curr) => acc + curr.spent, 0))}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Disponível Total</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  R$ {Math.max(0, budgetStats.reduce((acc, curr) => acc + (curr.limit - curr.spent), 0)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  {formatCurrency(Math.max(0, budgetStats.reduce((acc, curr) => acc + (curr.limit - curr.spent), 0)))}
                 </p>
               </div>
             </div>

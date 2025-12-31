@@ -9,6 +9,7 @@ import { ptBR } from "date-fns/locale"
 import { ArrowRight, Calendar, CheckCircle2, Clock, AlertCircle } from "lucide-react"
 import type { Card as CreditCard, Transaction } from "@/lib/types/app-types"
 import { getInvoiceAmountForMonth } from "@/lib/invoice-utils"
+import { formatCurrency } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 
 interface InvoiceHistoryDialogProps {
@@ -160,7 +161,7 @@ function InvoiceItem({ invoice, onPay, isHistory = false }: { invoice: any, onPa
             <div className="flex items-center gap-3">
                 <div className="text-right">
                     <span className={`block font-bold ${isHistory ? 'text-muted-foreground' : 'text-foreground'}`}>
-                        R$ {amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        {formatCurrency(amount)}
                     </span>
                 </div>
 

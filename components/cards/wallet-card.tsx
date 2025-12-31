@@ -3,6 +3,7 @@ import { MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { formatCurrency } from "@/lib/utils"
 
 interface WalletCardProps {
   name: string
@@ -51,7 +52,7 @@ export function WalletCard({ name, balance, icon, color, userName, userAvatar }:
         <div className="mt-auto">
           <p className="text-xs opacity-75 mb-1">Saldo disponível</p>
           <p className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
-            R$ {balance.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {formatCurrency(balance)}
           </p>
 
           {userName && (

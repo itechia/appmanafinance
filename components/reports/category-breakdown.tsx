@@ -4,6 +4,7 @@ import type React from "react"
 
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { formatCurrency } from "@/lib/utils"
 
 const categories = [
   { name: "Alimentação", amount: 1200, percentage: 24, color: "#2F404F" },
@@ -29,7 +30,7 @@ export function CategoryBreakdown() {
                 <span className="font-medium">{category.name}</span>
               </div>
               <div className="text-right">
-                <p className="font-semibold">R$ {category.amount.toLocaleString("pt-BR")}</p>
+                <p className="font-semibold">{formatCurrency(category.amount)}</p>
                 <p className="text-xs text-muted-foreground">{category.percentage}%</p>
               </div>
             </div>

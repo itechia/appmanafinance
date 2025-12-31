@@ -20,6 +20,7 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
 import { useTheme } from "next-themes"
+import { formatCurrency } from "@/lib/utils"
 
 // Mock invoice data
 const mockInvoices = [
@@ -161,7 +162,7 @@ export function SubscriptionManagement() {
               <CreditCard className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="text-sm font-medium">Valor mensal</p>
-                <p className="text-sm text-muted-foreground">R$ 39,99</p>
+                <p className="text-sm text-muted-foreground">{formatCurrency(39.99)}</p>
               </div>
             </div>
           </div>
@@ -202,7 +203,7 @@ export function SubscriptionManagement() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <p className="font-semibold">R$ {invoice.amount.toFixed(2)}</p>
+                    <p className="font-semibold">{formatCurrency(invoice.amount)}</p>
                     <Badge variant="outline" className="text-xs">
                       Pago
                     </Badge>

@@ -17,6 +17,7 @@ import { getInvoiceAmountForMonth } from "@/lib/invoice-utils" // Import helper
 
 import { PayInvoiceDialog } from "@/components/dashboard/pay-invoice-dialog"
 import { InvoiceHistoryDialog } from "@/components/cards/invoice-history-dialog" // Import
+import { formatCurrency } from "@/lib/utils"
 
 export default function CardsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -189,21 +190,21 @@ export default function CardsPage() {
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Total em Carteiras</p>
                   <p className="text-2xl font-bold text-primary">
-                    R$ {walletStats.totalBalance.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(walletStats.totalBalance)}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">{walletStats.walletCount} carteira(s)</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Total em Débito</p>
                   <p className="text-2xl font-bold text-secondary">
-                    R$ {walletStats.totalDebitBalance.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(walletStats.totalDebitBalance)}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">{walletStats.debitCardCount} cartão(ões)</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Saldo Total</p>
                   <p className="text-2xl font-bold text-primary">
-                    R$ {walletStats.grandTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(walletStats.grandTotal)}
                   </p>
                 </div>
               </div>
@@ -259,19 +260,19 @@ export default function CardsPage() {
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Limite Total</p>
                   <p className="text-2xl font-bold text-primary">
-                    R$ {creditCardStats.totalLimit.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(creditCardStats.totalLimit)}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Disponível</p>
                   <p className="text-2xl font-bold text-secondary">
-                    R$ {creditCardStats.totalAvailable.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(creditCardStats.totalAvailable)}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Utilizado</p>
                   <p className="text-2xl font-bold text-destructive">
-                    R$ {creditCardStats.totalUsed.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(creditCardStats.totalUsed)}
                   </p>
                 </div>
               </div>

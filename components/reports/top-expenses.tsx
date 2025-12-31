@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card"
 import { TrendingDown } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 
 const expenses = [
   { name: "Aluguel", amount: 2000, category: "Moradia" },
@@ -27,7 +28,7 @@ export function TopExpenses() {
               <p className="text-xs text-muted-foreground">{expense.category}</p>
             </div>
             <div className="text-right">
-              <p className="font-semibold">R$ {expense.amount.toLocaleString("pt-BR")}</p>
+              <p className="font-semibold">{formatCurrency(expense.amount)}</p>
               <div className="flex items-center gap-1 text-xs text-destructive">
                 <TrendingDown className="h-3 w-3" />
               </div>

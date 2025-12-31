@@ -7,7 +7,7 @@ import { GoalCard } from "@/components/goals/goal-card"
 import { GoalDialog } from "@/components/goals/goal-dialog"
 import { useUser } from "@/lib/user-context"
 import { useToast } from "@/hooks/use-toast"
-import { invoiceStorage } from "@/lib/invoice-storage"
+// import { invoiceStorage } from "@/lib/invoice-storage"
 import { formatCurrency } from "@/lib/utils"
 
 import { useAuth } from "@/lib/auth-context"
@@ -158,23 +158,8 @@ export default function GoalsPage() {
       updateGoal(id, { currentAmount: goal.currentAmount + amount })
 
       // If it was a credit transaction, link it to invoice
-      if (isCredit && card && createdTx && createdTx.id) {
-        const today = new Date()
-        const closingDay = card.closingDay || 10
-
-        // Get or create invoice
-        const invoice = invoiceStorage.getInvoiceForTransaction(
-          currentUser.id,
-          currentWorkspace?.id || 'local-ws-1',
-          actualCardId,
-          today,
-          closingDay
-        )
-
-        if (invoice) {
-          invoiceStorage.addTransactionToInvoice(invoice.id, createdTx.id, amount)
-        }
-      }
+      // If it was a credit transaction, link it to invoice
+      // (Handled implicitly by transaction date/card)
 
       toast({
         title: "Valor adicionado com sucesso!",

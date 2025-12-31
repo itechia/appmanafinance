@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import type { ReportFilters } from "@/lib/report-utils"
-import type { Transaction } from "@/lib/mock-data-storage"
+import type { Transaction } from "@/lib/types/app-types"
 
 interface ReportFiltersComponentProps {
   filters: ReportFilters

@@ -6,6 +6,7 @@ import { Target, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import type { Goal } from "@/lib/user-context"
+import { formatCurrency } from "@/lib/utils"
 
 interface GoalsOverviewProps {
   goals: Goal[]
@@ -70,14 +71,14 @@ export function GoalsOverview({ goals }: GoalsOverviewProps) {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold">{progress.toFixed(0)}%</p>
-                  <p className="text-xs text-muted-foreground">R$ {goal.currentAmount.toLocaleString("pt-BR")}</p>
+                  <p className="text-xs text-muted-foreground">{formatCurrency(goal.currentAmount)}</p>
                 </div>
               </div>
               <Progress value={progress} className="h-2" />
               {remainingAmount > 0 && daysLeft > 0 && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <TrendingUp className="h-3 w-3" />
-                  <span>Faltam R$ {remainingAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                  <span>Faltam {formatCurrency(remainingAmount)}</span>
                 </div>
               )}
             </div>

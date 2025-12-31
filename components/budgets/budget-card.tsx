@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useUser } from "@/lib/user-context"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { formatCurrency } from "@/lib/utils"
 
 interface BudgetCardProps {
   id: string
@@ -96,8 +97,8 @@ export function BudgetCard({
         <div className="space-y-5">
           <div>
             <div className="flex items-end justify-between mb-2">
-              <span className="text-3xl font-bold tracking-tight">R$ {spent.toLocaleString("pt-BR")}</span>
-              <span className="text-sm text-muted-foreground font-medium mb-1">de R$ {limit.toLocaleString("pt-BR")}</span>
+              <span className="text-3xl font-bold tracking-tight">{formatCurrency(spent)}</span>
+              <span className="text-sm text-muted-foreground font-medium mb-1">de {formatCurrency(limit)}</span>
             </div>
 
             <Progress
@@ -125,7 +126,7 @@ export function BudgetCard({
               {isOverBudget ? (
                 <p className="font-bold text-destructive">R$ 0,00</p>
               ) : (
-                <p className="font-bold text-emerald-600">R$ {remaining.toLocaleString("pt-BR")}</p>
+                <p className="font-bold text-emerald-600">{formatCurrency(remaining)}</p>
               )}
             </div>
             <div>

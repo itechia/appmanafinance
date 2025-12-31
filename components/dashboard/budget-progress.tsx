@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useUser } from "@/lib/user-context"
 import { calculateBudgetSpent, getBudgetLimitForMonth } from "@/lib/budget-utils"
+import { formatCurrency } from "@/lib/utils"
 
 interface Budget {
   category: string
@@ -52,8 +53,7 @@ export function BudgetProgress({ budgets, currentDate }: BudgetProgressProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">{budget.categoryName}</span>
                   <span className="text-sm text-muted-foreground">
-                    R$ {spent.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} / R${" "}
-                    {limit.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(spent)} / {formatCurrency(limit)}
                   </span>
                 </div>
                 <Progress

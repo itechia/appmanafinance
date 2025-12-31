@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { X, ChevronRight, ChevronLeft, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { storageHelpers } from "@/lib/storage-helpers"
+// import { storageHelpers } from "@/lib/storage-helpers"
 
 interface TourStep {
   target: string
@@ -93,7 +93,7 @@ export function OnboardingTour({ onComplete, onSkip }: OnboardingTourProps) {
   const [cardPosition, setCardPosition] = useState({ top: 0, left: 0 })
 
   useEffect(() => {
-    const tourCompleted = storageHelpers.get<boolean>(TOUR_COMPLETED_KEY)
+    const tourCompleted = window.localStorage.getItem("mana_tour_completed")
     if (!tourCompleted) {
       setTimeout(() => {
         setIsOpen(true)
@@ -188,7 +188,7 @@ export function OnboardingTour({ onComplete, onSkip }: OnboardingTourProps) {
   }
 
   const handleComplete = () => {
-    storageHelpers.set(TOUR_COMPLETED_KEY, true)
+    window.localStorage.setItem("mana_tour_completed", "true")
     setIsOpen(false)
     TOUR_STEPS.forEach((step) => {
       const element = document.querySelector(step.target) as HTMLElement

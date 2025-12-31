@@ -21,6 +21,7 @@ import { useUser } from "@/lib/user-context"
 import { TransactionDialog } from "./transaction-dialog"
 import { startOfMonth, endOfMonth, subMonths, addMonths, startOfYear, endOfYear, startOfDay, endOfDay, isWithinInterval } from "date-fns"
 import { DateRange } from "react-day-picker"
+import { formatCurrency } from "@/lib/utils"
 
 interface TransactionListProps {
   searchQuery?: string
@@ -334,8 +335,7 @@ export function TransactionList({ searchQuery = "", selectedUserIds = [], filter
                       <span
                         className={`font-semibold text-sm ${transaction.type === "income" ? "text-[#A2D19C]" : "text-[#D4AF37]"}`}
                       >
-                        {transaction.type === "income" ? "+" : ""}R${" "}
-                        {Math.abs(transaction.amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        {transaction.type === "income" ? "+" : ""}{formatCurrency(Math.abs(transaction.amount))}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">

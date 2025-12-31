@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress"
 import type React from "react"
 import type { Card as UserCard, Wallet, Transaction } from "@/lib/user-context"
 import { getInvoiceAmountForMonth } from "@/lib/invoice-utils"
+import { formatCurrency } from "@/lib/utils"
 
 interface CardsOverviewProps {
   cards: UserCard[]
@@ -72,7 +73,7 @@ export function CardsOverview({ cards, wallets, debitCards, currentDate, transac
           <div className="rounded-lg border p-4 bg-muted/30">
             <p className="text-xs text-muted-foreground mb-1">Saldo Total</p>
             <p className="text-2xl font-bold text-primary">
-              R$ {totalWalletBalance.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              {formatCurrency(totalWalletBalance)}
             </p>
             <div className="mt-3 space-y-2">
               {displayDebitCards.map((card) => (
@@ -84,7 +85,7 @@ export function CardsOverview({ cards, wallets, debitCards, currentDate, transac
                     </span>
                   </div>
                   <span className="font-medium">
-                    R$ {card.balance.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(card.balance)}
                   </span>
                 </div>
               ))}
@@ -95,7 +96,7 @@ export function CardsOverview({ cards, wallets, debitCards, currentDate, transac
                     <span className="text-muted-foreground">{wallet.name}</span>
                   </div>
                   <span className="font-medium">
-                    R$ {wallet.balance.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(wallet.balance)}
                   </span>
                 </div>
               ))}
@@ -122,7 +123,7 @@ export function CardsOverview({ cards, wallets, debitCards, currentDate, transac
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Limite Disponível</p>
                   <p className="text-lg font-bold text-secondary">
-                    R$ {totalCreditAvailable.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(totalCreditAvailable)}
                   </p>
                 </div>
                 <div>
@@ -130,7 +131,7 @@ export function CardsOverview({ cards, wallets, debitCards, currentDate, transac
                     {showMonthlyInvoice ? `Fatura (${capitalizedMonth})` : 'Fatura Total'}
                   </p>
                   <p className="text-lg font-bold text-destructive">
-                    R$ {totalInvoiceDue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(totalInvoiceDue)}
                   </p>
                 </div>
               </div>

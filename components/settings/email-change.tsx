@@ -16,20 +16,16 @@ import {
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from "@/lib/auth-context"
-import { useUser } from "@/lib/user-context"
-import { userStorage } from "@/lib/user-storage"
-import { verifyPassword } from "@/lib/crypto-utils"
 import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/lib/supabase"
 
 export function EmailChange() {
   const { user: authUser } = useAuth()
-  const { updateUserProfile } = useUser()
   const { toast } = useToast()
 
   const [isOpen, setIsOpen] = useState(false)
   const [newEmail, setNewEmail] = useState("")
   const [confirmEmail, setConfirmEmail] = useState("")
-  const [password, setPassword] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
 
@@ -37,7 +33,7 @@ export function EmailChange() {
     setError("")
 
     // Validation
-    if (!newEmail || !confirmEmail || !password) {
+    if (!newEmail || !confirmEmail) {
       setError("Todos os campos são obrigatórios")
       return
     }
@@ -58,48 +54,27 @@ export function EmailChange() {
       return
     }
 
-    // Check if email is already in use
-    const existingUser = userStorage.findUserByEmail(newEmail)
-    if (existingUser) {
-      setError("Este email já está em uso")
-      return
-    }
-
     setIsSubmitting(true)
 
     try {
-      // Verify password
-      if (!authUser) {
-        setError("Usuário não encontrado")
-        return
-      }
-
-      const storedUser = userStorage.findUserByEmail(authUser.email)
-      if (!storedUser) {
-        setError("Usuário não encontrado")
-        return
-      }
-
-      const isPasswordValid = await verifyPassword(password, storedUser.passwordHash)
-      if (!isPasswordValid) {
-        setError("Senha incorreta")
-        return
-      }
-
       // Update email
-      updateUserProfile({ email: newEmail.toLowerCase().trim() })
+      const { error: updateError } = await supabase.auth.updateUser({ email: newEmail })
+
+      if (updateError) {
+        throw updateError
+      }
 
       toast({
-        title: "Email atualizado!",
-        description: "Seu email foi alterado com sucesso",
+        title: "Verifique seu email!",
+        description: "Enviamos links de confirmação para o email antigo e para o novo.",
       })
 
       setIsOpen(false)
       setNewEmail("")
       setConfirmEmail("")
-      setPassword("")
-    } catch (error) {
-      setError("Erro ao atualizar email. Tente novamente.")
+    } catch (error: any) {
+      console.error(error)
+      setError(error.message || "Erro ao atualizar email. Tente novamente.")
     } finally {
       setIsSubmitting(false)
     }
@@ -117,7 +92,7 @@ export function EmailChange() {
         <DialogHeader>
           <DialogTitle>Alterar Email</DialogTitle>
           <DialogDescription>
-            Digite seu novo email e confirme com sua senha atual. Você precisará fazer login novamente após a alteração.
+            Digite seu novo email. Você receberá um link de confirmação em ambos os endereços.
           </DialogDescription>
         </DialogHeader>
 
@@ -153,17 +128,6 @@ export function EmailChange() {
               placeholder="novo@email.com"
               value={confirmEmail}
               onChange={(e) => setConfirmEmail(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha Atual</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Digite sua senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
         </div>

@@ -9,7 +9,7 @@ import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour"
-import { userStorage } from "@/lib/user-storage"
+// import { userStorage } from "@/lib/user-storage"
 import { SidebarProvider } from "@/lib/sidebar-context"
 
 interface ClientLayoutProps {
@@ -27,16 +27,18 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (isAuthenticated && userId && user) {
       // Check onboarding status
+      /*
       const storedUser = userStorage.findUserById(userId)
       if (storedUser && !storedUser.onboardingComplete) {
         setShowOnboarding(true)
       }
+      */
     }
   }, [isAuthenticated, userId, user, pathname])
 
   const handleOnboardingComplete = () => {
     if (userId) {
-      userStorage.updateUser(userId, { onboardingComplete: true })
+      // userStorage.updateUser(userId, { onboardingComplete: true })
       setShowOnboarding(false)
     }
   }

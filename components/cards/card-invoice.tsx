@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar, Download } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 
 const invoiceItems = [
   { date: "2025-01-15", description: "Supermercado Extra", amount: 350, installment: null },
@@ -42,7 +43,7 @@ export function CardInvoice() {
               </div>
             </div>
             <span className="font-semibold">
-              R$ {item.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              {formatCurrency(item.amount)}
             </span>
           </div>
         ))}
@@ -52,7 +53,7 @@ export function CardInvoice() {
         <div className="flex items-center justify-between">
           <span className="text-lg font-semibold">Total da Fatura</span>
           <span className="text-2xl font-bold text-[#D4AF37]">
-            R$ {total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            {formatCurrency(total)}
           </span>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { useUser } from "@/lib/user-context"
 import { useToast } from "@/hooks/use-toast"
 import { useState, useEffect } from "react"
+import { formatCurrency } from "@/lib/utils"
 
 export function NotificationsSettings() {
   const { notificationPreferences, updateNotificationPreferences } = useUser()
@@ -178,7 +179,7 @@ export function NotificationsSettings() {
               <TrendingUp className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="font-medium text-sm">Transações grandes</p>
-                <p className="text-xs text-muted-foreground">Alerta para valores acima de R$ 500</p>
+                <p className="text-xs text-muted-foreground">Alerta para valores acima de {formatCurrency(500)}</p>
               </div>
             </div>
             <Switch

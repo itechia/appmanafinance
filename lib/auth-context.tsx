@@ -2,8 +2,10 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useRouter, usePathname } from "next/navigation"
+import { supabase } from "@/lib/supabase"
+import type { User } from "@supabase/supabase-js"
 
-// Define UserProfile based on our schema (simplified for local)
+// Define UserProfile based on our schema
 export interface UserProfile {
   id: string
   email: string
@@ -34,8 +36,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const STORAGE_KEY = "mana_auth_user"
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -47,23 +47,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
-      console.log("Auth: Initializing Local Mode...")
+      console.log("Auth: Initializing Supabase...")
       try {
-        const storedUser = localStorage.getItem(STORAGE_KEY)
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser)
-          if (parsedUser && parsedUser.id) {
-            setUser(parsedUser)
-            setUserId(parsedUser.id)
-            setIsAuthenticated(true)
-            console.log("Auth: Local session retrieved", parsedUser.id)
-          }
+        const { data: { session } } = await supabase.auth.getSession()
+
+        if (session?.user) {
+          setUserId(session.user.id)
+          setIsAuthenticated(true)
+          await fetchProfile(session.user.id)
+        } else {
+          console.log("Auth: No session found")
         }
       } catch (error) {
-        console.error("Error reading from local storage:", error)
+        console.error("Error checking session:", error)
       } finally {
         setIsLoading(false)
       }
+
+      // Listen for auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        if (session?.user) {
+          setUserId(session.user.id)
+          setIsAuthenticated(true)
+          if (!user) await fetchProfile(session.user.id)
+        } else {
+          setUserId(null)
+          setUser(null)
+          setIsAuthenticated(false)
+        }
+        setIsLoading(false)
+      })
+
+      return () => subscription.unsubscribe()
     }
 
     initializeAuth()
@@ -77,68 +92,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, isLoading, pathname, router])
 
-  const refreshProfile = async () => {
-    // In local mode, we just re-read from storage if needed, 
-    // but state is usually authoritative.
-    const storedUser = localStorage.getItem(STORAGE_KEY)
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+  const fetchProfile = async (uid: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', uid)
+        .single()
+
+      if (error) {
+        console.error('Error fetching profile:', error)
+        return
+      }
+
+      if (data) {
+        setUser({
+          ...data,
+          firstName: data.name?.split(' ')[0] || '',
+          lastName: data.name?.split(' ').slice(1).join(' ') || '',
+          color: 'blue' // Default, maybe store in DB later
+        })
+      }
+    } catch (err) {
+      console.error("Failed to fetch profile", err)
     }
+  }
+
+  const refreshProfile = async () => {
+    if (userId) await fetchProfile(userId)
   }
 
   const updateUser = async (updates: Partial<UserProfile>) => {
-    if (!user) return
+    if (!userId) return
 
-    const updatedUser = { ...user, ...updates }
-    setUser(updatedUser)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser))
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId)
+
+      if (error) throw error
+      await refreshProfile()
+    } catch (e) {
+      console.error("Update user failed", e)
+    }
   }
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    // SIMULATED LOGIN
-    // In a real local-first app we might want to verify credentials against a stored list.
-    // For this transition, we will accept ANY login if it matches the stored user, OR
-    // just allow login as a new session if none exists.
-    // To be simplified: We will just Create/Update the user session on login for now, 
-    // effectively "logging in" as whoever.
-
-    await new Promise(resolve => setTimeout(resolve, 800)) // Fake network delay
-
-    // If we want to simulate persistent accounts, we'd need to store an array of users.
-    // For simplicity, let's just assume single user mode or overwrite.
-
-    const mockUser: UserProfile = {
-      id: "local-user-id-1",
-      email: email,
-      name: email.split('@')[0],
-      color: "blue",
-      plan: "pro", // Default to PRO in local mode for full features!
-      firstName: email.split('@')[0],
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
+      router.push("/")
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, error: e.message }
     }
-
-    // Check if we have a stored user to preserve name/avatar
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      const existing = JSON.parse(stored)
-      if (existing.email === email) {
-        // Restore existing profile
-        mockUser.id = existing.id
-        mockUser.name = existing.name
-        mockUser.avatar = existing.avatar
-        mockUser.color = existing.color
-        mockUser.firstName = existing.firstName
-        mockUser.lastName = existing.lastName
-        mockUser.plan = existing.plan // Preserve plan
-      }
-    }
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mockUser))
-    setUser(mockUser)
-    setUserId(mockUser.id)
-    setIsAuthenticated(true)
-
-    router.push("/")
-    return { success: true }
   }
 
   const register = async (
@@ -146,30 +154,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: string,
     password: string,
   ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name
+          }
+        }
+      })
+      if (error) throw error
 
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Fake delay
-
-    const newUser: UserProfile = {
-      id: `local-user-${Date.now()}`,
-      email: email,
-      name: name,
-      firstName: name.split(' ')[0],
-      lastName: name.split(' ').slice(1).join(' '),
-      color: "blue",
-      plan: "pro", // Everyone is PRO locally
+      router.push("/")
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, error: e.message }
     }
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser))
-    setUser(newUser)
-    setUserId(newUser.id)
-    setIsAuthenticated(true)
-
-    router.push("/")
-    return { success: true }
   }
 
   const logout = async () => {
-    localStorage.removeItem(STORAGE_KEY)
+    await supabase.auth.signOut()
     setUser(null)
     setUserId(null)
     setIsAuthenticated(false)

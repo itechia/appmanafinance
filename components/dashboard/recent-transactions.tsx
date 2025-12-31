@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useUser, type Transaction } from "@/lib/user-context"
 import Link from "next/link"
+import { formatCurrency } from "@/lib/utils"
 
 interface RecentTransactionsProps {
   transactions: Transaction[]
@@ -78,8 +79,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                   <p
                     className={`font-semibold text-sm ${transaction.type === "income" ? "text-secondary" : "text-destructive"}`}
                   >
-                    {transaction.type === "income" ? "+" : ""}R${" "}
-                    {Math.abs(transaction.amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {transaction.type === "income" ? "+" : ""}{formatCurrency(Math.abs(transaction.amount))}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {new Date(transaction.date).toLocaleDateString("pt-BR")}

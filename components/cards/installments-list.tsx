@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 
 const installments = [
   {
@@ -62,13 +63,13 @@ export function InstallmentsList() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Valor da parcela</span>
                   <span className="font-semibold">
-                    R$ {item.installmentAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(item.installmentAmount)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Total</span>
                   <span className="font-medium">
-                    R$ {item.totalAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(item.totalAmount)}
                   </span>
                 </div>
               </div>

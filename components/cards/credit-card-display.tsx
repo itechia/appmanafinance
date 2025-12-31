@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { formatCurrency } from "@/lib/utils"
 
 interface CreditCardDisplayProps {
   name: string
@@ -120,7 +121,7 @@ export function CreditCardDisplay({
           <div className="pb-4 border-b">
             <p className="text-xs text-muted-foreground mb-1">Saldo em conta</p>
             <p className="text-2xl font-bold text-primary">
-              R$ {balance.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              {formatCurrency(balance)}
             </p>
           </div>
         )}
@@ -132,7 +133,7 @@ export function CreditCardDisplay({
                 <p className="text-xs text-muted-foreground">Limite do Cartão</p>
               </div>
               <p className="text-lg font-semibold text-primary">
-                R$ {limit.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                {formatCurrency(limit)}
               </p>
             </div>
 
@@ -151,7 +152,7 @@ export function CreditCardDisplay({
             <div className="grid grid-cols-2 gap-4 pt-2 border-t">
               <div>
                 <p className="text-xs text-muted-foreground">Disponível</p>
-                <p className="text-lg font-semibold text-emerald-600">R$ {available.toLocaleString("pt-BR")}</p>
+                <p className="text-lg font-semibold text-emerald-600">{formatCurrency(available)}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Vencimento</p>
@@ -171,7 +172,7 @@ export function CreditCardDisplay({
                 </div>
                 <div className="text-right">
                   <span className="text-xl font-bold text-destructive">
-                    R$ {displayInvoiceValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatCurrency(displayInvoiceValue)}
                   </span>
                 </div>
               </div>
