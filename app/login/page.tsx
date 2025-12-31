@@ -15,7 +15,7 @@ import { useEffect, useState as useStateEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator"
 import { isPasswordValid } from "@/lib/utils/password-validator"
-// import { localStorage } from "@/lib/storage-helpers"
+
 
 type ViewMode = "login" | "register" | "reset"
 
