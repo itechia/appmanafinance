@@ -22,8 +22,9 @@ export function UserSwitcher() {
 
   if (!currentUser) return null
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    console.log("UserSwitcher: Logging out...")
+    await logout()
   }
 
   if (isMobile) {
