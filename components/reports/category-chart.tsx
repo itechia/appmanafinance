@@ -5,14 +5,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts"
 import { formatCurrency } from "@/lib/report-utils"
 
+import type { Category } from "@/lib/types/app-types"
+
 interface CategoryChartProps {
   expenseCategories: { category: string; amount: number; percentage: number }[]
   incomeCategories: { category: string; amount: number; percentage: number }[]
+  categories?: Category[]
 }
 
-const COLORS = ["#28a745", "#20c997", "#17a2b8", "#6610f2", "#fd7e14"]
+const DEFAULT_COLORS = ["#28a745", "#20c997", "#17a2b8", "#6610f2", "#fd7e14", "#d63384", "#6f42c1"]
 
-export function CategoryChart({ expenseCategories, incomeCategories }: CategoryChartProps) {
+export function CategoryChart({ expenseCategories, incomeCategories, categories = [] }: CategoryChartProps) {
+  const getCategoryColor = (categoryName: string, index: number) => {
+    const category = categories.find(c => c.name === categoryName)
+    if (category?.color) return category.color
+    return DEFAULT_COLORS[index % DEFAULT_COLORS.length]
+  }
+
   return (
     <Card className="p-4 md:p-5">
       <h3 className="text-sm md:text-base font-semibold mb-4">Top Categorias</h3>
@@ -41,7 +50,7 @@ export function CategoryChart({ expenseCategories, incomeCategories }: CategoryC
               />
               <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
                 {expenseCategories.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={`cell-${index}`} fill={getCategoryColor(entry.category, index)} />
                 ))}
               </Bar>
             </BarChart>
@@ -63,7 +72,7 @@ export function CategoryChart({ expenseCategories, incomeCategories }: CategoryC
               />
               <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
                 {incomeCategories.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={`cell-${index}`} fill={getCategoryColor(entry.category, index)} />
                 ))}
               </Bar>
             </BarChart>

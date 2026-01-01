@@ -15,7 +15,6 @@ import { EmailChange } from "./email-change"
 
 export function ProfileSettings() {
   const { currentUser, updateUserProfile, uploadAvatar } = useUser()
-  const { user: authUser } = useAuth()
   const { toast } = useToast()
 
   const [profileImage, setProfileImage] = useState<string | null>(null)
@@ -28,18 +27,20 @@ export function ProfileSettings() {
   const [bio, setBio] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Use currentUser instead of authUser to get the correctly mapped profile data (avatar_url -> avatar, etc.)
   useEffect(() => {
-    if (authUser) {
-      const combinedName = [authUser.firstName, authUser.lastName].filter(Boolean).join(" ")
-      setFullName(combinedName || authUser.name || "")
-      setEmail(authUser.email || "")
-      setPhone(authUser.phone || "")
-      setCpf(authUser.cpf || "")
-      setBirthDate(authUser.birthDate || "")
-      setBio(authUser.bio || "")
-      setProfileImage(authUser.avatar || null)
+    if (currentUser) {
+      // currentUser from user-context has the merged & mapped profile data
+      const combinedName = [currentUser.firstName, currentUser.lastName].filter(Boolean).join(" ")
+      setFullName(currentUser.name || combinedName || "")
+      setEmail(currentUser.email || "")
+      setPhone(currentUser.phone || "")
+      setCpf(currentUser.cpf || "")
+      setBirthDate(currentUser.birthDate || "")
+      setBio(currentUser.bio || "")
+      setProfileImage(currentUser.avatar || null)
     }
-  }, [authUser])
+  }, [currentUser])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -93,26 +94,17 @@ export function ProfileSettings() {
         if (uploadedUrl) {
           avatarUrl = uploadedUrl
         } else {
-          // If upload failed, we might want to stop or continue with old avatar?
-          // For now, let's warn but continue with text updates if possible, 
-          // or just throw to stop.
-          // The uploadAvatar function already toasts on error.
-          // Let's assume if it returns null, we shouldn't update the avatar field with the local base64.
-          // So we keep avatarUrl as is? No, profileImage is base64 now.
-          // If upload fails, we should probably revert avatarUrl to authUser.avatar or undefined.
-          // But let's just use undefined to not break the text update.
-          avatarUrl = authUser?.avatar || null
+          // If upload fails, keep existing or fallback
+          avatarUrl = currentUser?.avatar || null
         }
       }
 
-      const nameParts = fullName.trim().split(" ")
-      const firstName = nameParts[0] || ""
-      const lastName = nameParts.slice(1).join(" ") || ""
-
       await updateUserProfile({
         name: fullName.trim(),
-        firstName,
-        lastName,
+        // Derived firstName/lastName are handled if needed, or rely on full name split in context backend or handle here.
+        // The component logic already split it:
+        firstName: fullName.trim().split(" ")[0] || "",
+        lastName: fullName.trim().split(" ").slice(1).join(" ") || "",
         email: email.trim(),
         phone: phone.trim(),
         cpf: cpf.trim(),
@@ -121,32 +113,31 @@ export function ProfileSettings() {
         avatar: avatarUrl || undefined,
       })
 
-      toast({
-        title: "Sucesso!",
-        description: "Perfil atualizado com sucesso",
-      })
+      // Success toast is now handled in updateUserProfile context call to be consistent.
+      // But we can keep it here if we want component-level feedback. 
+      // Actually, let's rely on context for state update confirmation or keep it simple.
+      // Context has toast("Perfil atualizado").
+
+      // We don't need another toast here.
     } catch (error) {
       console.error("Profile save error:", error)
-      toast({
-        title: "Erro",
-        description: "Não foi possível salvar o perfil. Tente novamente.",
-        variant: "destructive",
-      })
+      // Context already toasted "Erro", so we don't need to duplicate it, 
+      // but catching here ensures isSubmitting goes to false.
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const handleCancel = () => {
-    if (authUser) {
-      const combinedName = [authUser.firstName, authUser.lastName].filter(Boolean).join(" ")
-      setFullName(combinedName || authUser.name || "")
-      setEmail(authUser.email || "")
-      setPhone(authUser.phone || "")
-      setCpf(authUser.cpf || "")
-      setBirthDate(authUser.birthDate || "")
-      setBio(authUser.bio || "")
-      setProfileImage(authUser.avatar || null)
+    if (currentUser) {
+      const combinedName = [currentUser.firstName, currentUser.lastName].filter(Boolean).join(" ")
+      setFullName(currentUser.name || combinedName || "")
+      setEmail(currentUser.email || "")
+      setPhone(currentUser.phone || "")
+      setCpf(currentUser.cpf || "")
+      setBirthDate(currentUser.birthDate || "")
+      setBio(currentUser.bio || "")
+      setProfileImage(currentUser.avatar || null)
     }
   }
 

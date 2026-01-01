@@ -29,7 +29,7 @@ import { ReportFiltersComponent } from "@/components/reports/report-filters"
 import { CategoryChart } from "@/components/reports/category-chart"
 import { MonthlyTrendChart } from "@/components/reports/monthly-trend-chart"
 import { TransactionTable } from "@/components/reports/transaction-table"
-import { startOfMonth, endOfMonth, differenceInMonths } from "date-fns"
+import { startOfMonth, endOfMonth, differenceInMonths, subMonths } from "date-fns"
 import { toast } from "sonner"
 import {
   calculateFinancialHealth,
@@ -38,6 +38,7 @@ import {
   analyzeSpendingPatterns,
   generateFinancialInsights,
 } from "@/lib/financial-health"
+import { ProGate } from "@/components/ui/pro-gate"
 
 
 export default function ReportsPage() {
@@ -47,28 +48,34 @@ export default function ReportsPage() {
     transactions: contextTransactions,
     goals: contextGoals,
     cards: contextCards,
+    categories: contextCategories,
   } = useUser()
   const [isExporting, setIsExporting] = useState(false)
   const reportRef = useRef<HTMLDivElement>(null)
 
   const [filters, setFilters] = useState<ReportFilters>({
-    startDate: startOfMonth(new Date()),
+    startDate: startOfMonth(subMonths(new Date(), 3)), // Changed to last 3 months default
     endDate: endOfMonth(new Date()),
-    userIds: currentUser ? [currentUser.id] : [],
+    userIds: [], // Default to ALL users to ensure data visibility
     categories: [],
     accounts: [],
     types: [],
   })
 
+  // Use useEffect to update startDate only on first mount if needed,
+  // but initial state is fine.
+  // We need to ensure filters update if currentUser loads late, but userIds is set.
+
   const transactions = contextTransactions
   const goals = contextGoals
   const cards = contextCards
+  const categories = contextCategories
 
   const hasTransactions = transactions && transactions.length > 0
   const hasAnyData = hasTransactions || (budgets && budgets.length > 0) || (goals && goals.length > 0)
 
   return (
-    <>
+    <ProGate featureName="Relatórios Avançados" description="Desbloqueie análises detalhadas, gráficos de tendências e insights automáticos sobre sua saúde financeira.">
       {!hasTransactions ? (
         <div className="space-y-4 md:space-y-6 pb-20 lg:pb-6 px-2 sm:px-4 md:px-6 max-w-full overflow-x-hidden">
           {/* Header */}
@@ -127,6 +134,7 @@ export default function ReportsPage() {
           transactions={transactions}
           goals={goals}
           cards={cards}
+          categories={categories}
           filters={filters}
           setFilters={setFilters}
           isExporting={isExporting}
@@ -134,7 +142,7 @@ export default function ReportsPage() {
           reportRef={reportRef}
         />
       )}
-    </>
+    </ProGate>
   )
 }
 
@@ -144,6 +152,7 @@ function ReportsContent({
   transactions,
   goals,
   cards,
+  categories,
   filters,
   setFilters,
   isExporting,
@@ -570,6 +579,7 @@ function ReportsContent({
           <CategoryChart
             expenseCategories={metrics.topExpenseCategories}
             incomeCategories={metrics.topIncomeCategories}
+            categories={categories}
           />
         </div>
 

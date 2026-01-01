@@ -90,7 +90,21 @@ export function WhatsAppSettings() {
   const { wallets, cards, currentUser, updateUserProfile } = useUser()
   const { toast } = useToast()
 
-  const [phone, setPhone] = useState(currentUser?.whatsappPhone || "+55 (11) 98 00000-0000")
+  const [enabled, setEnabled] = useState<boolean>(currentUser?.whatsappEnabled || false)
+
+  // Logic to determine initial phone:
+  // 1. Use saved whatsappPhone if it exists and is NOT the placeholder
+  // 2. Fallback to profile phone
+  // 3. Fallback to empty string (placeholder will show in input)
+  const defaultPlaceholder = "+55 (11) 98 00000-0000"
+  const savedPhone = currentUser?.whatsappPhone
+  const profilePhone = currentUser?.phone
+
+  const initialPhone = (savedPhone && savedPhone !== defaultPlaceholder)
+    ? savedPhone
+    : (profilePhone || "")
+
+  const [phone, setPhone] = useState(initialPhone)
   const [selectedPersonalities, setSelectedPersonalities] = useState<string[]>(currentUser?.whatsappPersonalities || ["professional"])
   const [gender, setGender] = useState<string>(currentUser?.whatsappGender || "male")
   const [defaultDebitAccount, setDefaultDebitAccount] = useState<string>(currentUser?.whatsappDefaultDebitAccount || "")
@@ -99,6 +113,7 @@ export function WhatsAppSettings() {
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, "")
+    // ... logic same ...
     if (numbers.length <= 2) return `+${numbers}`
     if (numbers.length <= 4) return `+${numbers.slice(0, 2)} (${numbers.slice(2)}`
     if (numbers.length <= 6) return `+${numbers.slice(0, 2)} (${numbers.slice(2, 4)}) ${numbers.slice(4)}`
@@ -120,23 +135,18 @@ export function WhatsAppSettings() {
     setIsLoading(true)
     try {
       await updateUserProfile({
+        whatsappEnabled: enabled,
         whatsappPhone: phone,
         whatsappPersonalities: selectedPersonalities,
         whatsappGender: gender,
+        // We pass local state. Context will handle empty strings.
         whatsappDefaultDebitAccount: defaultDebitAccount,
         whatsappDefaultCreditCard: defaultCreditCard
       })
-      toast({
-        title: "Configurações salvas!",
-        description: "Suas preferências do WhatsApp foram atualizadas com sucesso.",
-      })
+      // updateUserProfile handles Success Toast
     } catch (error) {
       console.error(error)
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar as configurações.",
-        variant: "destructive"
-      })
+      // updateUserProfile handles Error Toast
     } finally {
       setIsLoading(false)
     }
@@ -159,7 +169,7 @@ export function WhatsAppSettings() {
             <h3 className="font-medium text-foreground">Conectar WhatsApp</h3>
             <p className="text-sm text-muted-foreground">Vincule seu número para usar o assistente</p>
           </div>
-          <Switch />
+          <Switch checked={enabled} onCheckedChange={setEnabled} />
         </div>
 
         <div className="space-y-2 pl-15">

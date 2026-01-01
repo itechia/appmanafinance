@@ -8,7 +8,10 @@ import { PLAN_FEATURES } from "@/lib/types/subscription"
 import { useRouter } from "next/navigation"
 import { cn, formatCurrency } from "@/lib/utils"
 
+import { useUser } from "@/lib/user-context"
+
 export default function PricingPage() {
+  const { currentUser } = useUser()
   const [interval, setInterval] = useState<"monthly" | "yearly">("monthly")
   const router = useRouter()
 
@@ -17,6 +20,7 @@ export default function PricingPage() {
 
   const monthlyPrice = 29.99
   const yearlyPrice = 299.99
+  const isPro = currentUser?.plan === 'pro'
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -45,7 +49,7 @@ export default function PricingPage() {
           </h1>
 
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Como você está utilizando a versão LOCAL, todos os recursos PRO já estão desbloqueados gratuitamente!
+            Escolha o plano ideal para suas necessidades e comece a transformar sua vida financeira hoje mesmo.
           </p>
 
           <div className="flex justify-center pt-4">
@@ -83,7 +87,12 @@ export default function PricingPage() {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto items-start">
           {/* Free Plan */}
-          <Card className="relative overflow-hidden border-muted transition-all duration-300 hover:shadow-lg hover:border-primary/20 group">
+          <Card className={`relative overflow-hidden border-muted transition-all duration-300 hover:shadow-lg hover:border-primary/20 group ${!isPro ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
+            {!isPro && (
+              <div className="absolute top-0 right-0 bg-muted text-muted-foreground px-4 py-1.5 rounded-bl-xl text-xs font-bold tracking-wide uppercase shadow-sm">
+                Plano Atual
+              </div>
+            )}
             <CardHeader className="pb-8">
               <CardTitle className="text-2xl font-bold">Gratuito</CardTitle>
               <CardDescription className="text-base mt-2">
@@ -95,8 +104,8 @@ export default function PricingPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              <Button variant="outline" className="w-full h-12 text-base font-medium" disabled onClick={() => router.push("/")}>
-                Incluído
+              <Button variant="outline" className="w-full h-12 text-base font-medium" disabled>
+                {isPro ? "Downgrade (Via Configurações)" : "Plano Atual"}
               </Button>
               <div className="space-y-4">
                 <p className="text-sm font-medium text-foreground">O plano inclui:</p>
@@ -115,11 +124,13 @@ export default function PricingPage() {
           </Card>
 
           {/* Pro Plan */}
-          <Card className="relative overflow-hidden border-primary shadow-xl scale-105 z-10 bg-card">
+          <Card className={`relative overflow-hidden border-primary shadow-xl scale-105 z-10 bg-card ${isPro ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary" />
-            <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-4 py-1.5 rounded-bl-xl text-xs font-bold tracking-wide uppercase shadow-sm">
-              Ativado
-            </div>
+            {isPro && (
+              <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-4 py-1.5 rounded-bl-xl text-xs font-bold tracking-wide uppercase shadow-sm">
+                Ativado
+              </div>
+            )}
 
             <CardHeader className="pb-8">
               <CardTitle className="text-2xl font-bold flex items-center gap-2">
@@ -151,10 +162,35 @@ export default function PricingPage() {
             <CardContent className="space-y-6">
               <Button
                 className="w-full h-12 text-base font-medium bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
-                onClick={() => router.push("/")}
+                disabled={isPro}
+                onClick={async () => {
+                  try {
+                    const { data: { session } } = await import('@/lib/supabase').then(m => m.supabase.auth.getSession())
+                    if (!session) return router.push('/login')
+
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-checkout-session`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                      },
+                      body: JSON.stringify({ interval })
+                    })
+
+                    const { sessionId } = await response.json()
+                    if (sessionId) {
+                      const stripe = await import('@/lib/stripe').then(m => m.getStripe())
+                      if (stripe) {
+                        await (stripe as any).redirectToCheckout({ sessionId })
+                      }
+                    }
+                  } catch (error) {
+                    console.error("Checkout failed:", error)
+                  }
+                }}
               >
-                Já Ativado (Versão Local)
-                <Zap className="h-4 w-4 ml-2 fill-current" />
+                {isPro ? "Plano Atual" : "Assinar Agora"}
+                {!isPro && <Zap className="h-4 w-4 ml-2 fill-current" />}
               </Button>
 
               <div className="space-y-4">

@@ -35,11 +35,22 @@ export default function BudgetsPage() {
       const spent = calculateBudgetSpent(budget, month, year, transactions, cards, currentUser.id)
       const limit = getBudgetLimitForMonth(budget, month, year)
 
+      // Filter transactions for this budget to count them
+      const budgetTransactions = transactions.filter(t => {
+        const tDate = new Date(t.date)
+        return (
+          tDate.getMonth() === month &&
+          tDate.getFullYear() === year &&
+          t.type === 'expense' &&
+          t.category === budget.categoryName
+        )
+      })
+
       return {
         ...budget,
         spent,
         limit, // Override with historical limit
-        transactionCount: 0, // Simplified, or calculate if needed
+        transactionCount: budgetTransactions.length,
         color: budget.categoryColor || "#2F404F",
         isOverBudget: spent > limit,
       }
@@ -52,7 +63,7 @@ export default function BudgetsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-full overflow-x-hidden p-3 md:p-6 pb-20 lg:pb-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1 min-w-0">
           <h1 className="text-xl md:text-3xl font-bold text-foreground truncate">Orçamentos & Categorias</h1>

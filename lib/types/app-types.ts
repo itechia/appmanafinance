@@ -11,11 +11,26 @@ export interface User {
     birthDate?: string
     bio?: string
     plan?: "free" | "pro"
+    whatsappEnabled?: boolean
     whatsappPhone?: string
     whatsappPersonalities?: string[]
     whatsappGender?: string
+    whatsappOriginState?: string
     whatsappDefaultDebitAccount?: string
     whatsappDefaultCreditCard?: string
+    whatsappCmdExpenses?: boolean
+    whatsappCmdBalance?: boolean
+    whatsappCmdTransactions?: boolean
+
+    // Notification Settings
+    notifyBillsDueDaily?: boolean
+    notifyBillsAdvanceDays?: number
+    notifyWeeklyReport?: boolean
+    notifyMonthlyReport?: boolean
+    notifyMonthlyReportDay?: string
+    notifyCardLimit?: boolean
+    notifyBudgetExceeded?: boolean
+    notifyLargeTransaction?: boolean
 }
 
 export interface Budget {
@@ -82,6 +97,7 @@ export interface Goal {
     category: string
     icon: string
     color: string
+    imageUrl?: string
     userId: string
     createdAt: string
 }

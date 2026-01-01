@@ -7,6 +7,7 @@ import { GoalCard } from "@/components/goals/goal-card"
 import { GoalDialog } from "@/components/goals/goal-dialog"
 import { useUser } from "@/lib/user-context"
 import { useToast } from "@/hooks/use-toast"
+import { ProGate } from "@/components/ui/pro-gate"
 // import { invoiceStorage } from "@/lib/invoice-storage"
 import { formatCurrency } from "@/lib/utils"
 
@@ -235,7 +236,7 @@ export default function GoalsPage() {
   }
 
   return (
-    <>
+    <ProGate featureName="Objetivos Financeiros" description="Defina, rastreie e conquiste suas metas de curto e longo prazo com ferramentas de planejamento dedicadas.">
       <div className="space-y-3 md:space-y-6 max-w-full overflow-x-hidden">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1 min-w-0">
@@ -300,6 +301,6 @@ export default function GoalsPage() {
           initialData={editingGoal}
         />
       </div>
-    </>
+    </ProGate>
   )
 }

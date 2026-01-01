@@ -61,17 +61,39 @@ export function SubscriptionManagement() {
 
   const handleCancelSubscription = async () => {
     setIsCanceling(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
 
-    updateUser({ plan: "free", planExpiresAt: undefined })
-    setIsCanceling(false)
-    setShowCancelDialog(false)
+    try {
+      const { data: { session } } = await import('@/lib/supabase').then(m => m.supabase.auth.getSession())
+      if (!session) return
 
-    toast({
-      title: "Assinatura cancelada",
-      description: "Sua assinatura Pro foi cancelada. Você voltou para o plano Free.",
-    })
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/cancel-subscription`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      if (response.ok) {
+        toast({
+          title: "Assinatura cancelada",
+          description: "Sua assinatura foi agendada para cancelamento no final do período.",
+        })
+        // Update local state implicitly via re-fetch or optimistically
+        updateUser({ plan: "free", planExpiresAt: new Date().toISOString() }) // Ideally wait for webhook but this gives feedback
+        setShowCancelDialog(false)
+      } else {
+        throw new Error("Failed to cancel")
+      }
+    } catch (error) {
+      console.error("Cancellation failed:", error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível cancelar a assinatura. Tente novamente.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsCanceling(false)
+    }
   }
 
   const generateInvoicePDF = (invoice: (typeof mockInvoices)[0]) => {

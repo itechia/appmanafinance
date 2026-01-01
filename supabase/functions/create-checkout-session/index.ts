@@ -36,48 +36,49 @@ serve(async (req) => {
             return new Response("Unauthorized", { status: 401, headers: corsHeaders })
         }
 
-        const { priceId } = await req.json()
+        const { priceId, interval } = await req.json()
 
-        // Determine mode based on price (hacky check or just assume subscription for monthly)
-        // For this specific implementation:
-        // Monthly (price_1SYtDfHDtWNlSWhd0uorbFl1) -> Subscription
-        // Annual (price_1SYtDhHDtWNlSWhdBIP57Are) -> Payment (with installments) OR Subscription
+        // Real Recurring Price IDs verified from Stripe (New Account)
+        const MONTHLY_PRICE_ID = "price_1Sko1WQfKOjb4zhJyzSnNH4S"
+        const YEARLY_PRICE_ID = "price_1Sko1WQfKOjb4zhJ1AtgiBKW"
 
-        // Since we created them as one-time prices in the previous step (my mistake/limitation),
-        // we should treat them as one-time payments that grant access for a period.
-        // However, for "subscription", Stripe expects 'subscription' mode and a recurring price.
-        // If we use 'payment' mode, it's a one-time charge.
+        // Determine correct price ID if not provided specific one, or validate
+        let finalPriceId = priceId
+        if (interval === "year") finalPriceId = YEARLY_PRICE_ID
+        if (interval === "month") finalPriceId = MONTHLY_PRICE_ID
 
-        // Let's assume for now we use 'payment' mode for both since the prices are one-time.
-        // We will handle the "subscription" logic manually in the webhook (expiring date).
+        // Verify if it is one of our valid prices
+        if (finalPriceId !== MONTHLY_PRICE_ID && finalPriceId !== YEARLY_PRICE_ID) {
+            // Fallback to monthly if something is wrong, or return error. 
+            // Let's default to Monthly for safety if invalid input.
+            finalPriceId = MONTHLY_PRICE_ID
+        }
 
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card", "boleto"], // Add 'pix' if enabled in Stripe Dashboard
+            payment_method_types: ["card", "boleto"],
             line_items: [
                 {
-                    price: priceId,
+                    price: finalPriceId,
                     quantity: 1,
                 },
             ],
-            mode: "payment",
+            mode: "subscription", // Restored 'subscription' mode for recurring billing
+            allow_promotion_codes: true, // Enable Coupons!
             success_url: `${req.headers.get("origin")}/settings?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${req.headers.get("origin")}/settings`,
+            cancel_url: `${req.headers.get("origin")}/pricing`,
             client_reference_id: user.id,
             customer_email: user.email,
-            // Enable installments for the annual plan if it's the annual price
-            payment_method_options: priceId === 'price_1SYtDhHDtWNlSWhdBIP57Are' ? {
-                card: {
-                    installments: {
-                        enabled: true,
-                    },
-                },
-            } : undefined,
+            metadata: {
+                userId: user.id, // Redundant but good for double check
+                planType: finalPriceId === YEARLY_PRICE_ID ? "yearly" : "monthly"
+            }
         })
 
         return new Response(JSON.stringify({ sessionId: session.id }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
         })
     } catch (error) {
+        console.error("Checkout error:", error)
         return new Response(JSON.stringify({ error: error.message }), {
             status: 400,
             headers: { ...corsHeaders, "Content-Type": "application/json" },

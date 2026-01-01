@@ -220,7 +220,7 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
                     <Tooltip delayDuration={0}>
                       <TooltipTrigger asChild>
                         <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-secondary px-0.5 py-0.5 bg-secondary/20 rounded truncate cursor-help hover:bg-secondary/30 transition-colors">
-                          +{incomeTotal.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}
+                          +{formatCurrency(incomeTotal)}
                         </div>
                       </TooltipTrigger>
                       <TransactionTooltip
@@ -237,7 +237,7 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
                     <Tooltip delayDuration={0}>
                       <TooltipTrigger asChild>
                         <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-cyan-600 px-0.5 py-0.5 bg-cyan-100 dark:bg-cyan-900/30 rounded truncate cursor-help hover:bg-cyan-200 dark:hover:bg-cyan-900/50 transition-colors">
-                          -{investmentTotal.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}
+                          -{formatCurrency(investmentTotal)}
                         </div>
                       </TooltipTrigger>
                       <TransactionTooltip
@@ -255,7 +255,7 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
                     <Tooltip delayDuration={0}>
                       <TooltipTrigger asChild>
                         <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-destructive px-0.5 py-0.5 bg-destructive/20 rounded truncate cursor-help hover:bg-destructive/30 transition-colors">
-                          -{totalDailyExpense.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}
+                          -{formatCurrency(totalDailyExpense)}
                         </div>
                       </TooltipTrigger>
                       <TransactionTooltip
@@ -273,7 +273,7 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
                     <Tooltip delayDuration={0}>
                       <TooltipTrigger asChild>
                         <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-amber-500 px-0.5 py-0.5 bg-amber-500/10 rounded truncate cursor-help hover:bg-amber-500/20 transition-colors">
-                          {creditTotal.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}
+                          {formatCurrency(creditTotal)}
                         </div>
                       </TooltipTrigger>
                       <TransactionTooltip

@@ -43,29 +43,46 @@ serve(async (req) => {
         const customerId = session.customer
 
         if (userId) {
-            // Calculate end date (default 30 days for monthly, 365 for annual)
-            // Ideally we fetch the subscription details from Stripe to get current_period_end
-            let endDate = new Date()
-            if (session.mode === 'subscription') {
-                // For subscriptions, we should fetch the subscription object
-                // But for now let's just assume active
-            } else {
-                // One-time payment (Annual with installments)
-                // Assuming annual for one-time payments in this context
-                endDate.setFullYear(endDate.getFullYear() + 1)
-            }
-
             await supabase
-                .from("users")
+                .from("profiles")
                 .update({
-                    subscription_plan: "pro",
+                    plan: "pro",
+                    stripe_customer_id: customerId,
+                    stripe_subscription_id: typeof subscriptionId === 'string' ? subscriptionId : null,
                     subscription_status: "active",
-                    subscription_provider: "stripe",
-                    subscription_id: typeof subscriptionId === 'string' ? subscriptionId : null,
-                    subscription_end_date: endDate.toISOString(),
                 })
                 .eq("id", userId)
         }
+    } else if (event.type === "customer.subscription.updated") {
+        const subscription = event.data.object
+        const status = subscription.status
+        // We need to find the user by subscription_id or customer_id since client_reference_id is not here
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("stripe_subscription_id", subscription.id)
+            .single()
+
+        if (profile) {
+            const isPro = status === 'active' || status === 'trialing'
+            await supabase
+                .from("profiles")
+                .update({
+                    plan: isPro ? "pro" : "free",
+                    subscription_status: status,
+                })
+                .eq("id", profile.id)
+        }
+    } else if (event.type === "customer.subscription.deleted") {
+        const subscription = event.data.object
+
+        await supabase
+            .from("profiles")
+            .update({
+                plan: "free",
+                subscription_status: "canceled",
+            })
+            .eq("stripe_subscription_id", subscription.id)
     }
 
     return new Response(JSON.stringify({ received: true }), {

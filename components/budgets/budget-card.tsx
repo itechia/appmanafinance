@@ -53,17 +53,12 @@ export function BudgetCard({
   }
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-300 overflow-hidden">
-      <div
-        className="relative h-24 p-6 text-white"
-        style={{
-          background: color,
-        }}
-      >
-        <div className="flex items-start justify-between">
+    <Card className="hover:shadow-md transition-all duration-300 overflow-hidden border-l-4" style={{ borderLeftColor: color }}>
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-4">
           <div>
-            <h3 className="font-bold text-xl">{category}</h3>
-            <p className="text-xs text-white/80 capitalize mt-1">
+            <h3 className="font-bold text-xl" style={{ color: color }}>{category}</h3>
+            <p className="text-xs text-muted-foreground capitalize mt-1">
               {period === "monthly"
                 ? "Orçamento Mensal"
                 : period === "weekly"
@@ -75,8 +70,8 @@ export function BudgetCard({
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 -mr-2 -mt-2">
-                <MoreVertical className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
+                <MoreVertical className="h-5 w-5 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -91,9 +86,7 @@ export function BudgetCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
 
-      <div className="p-6 -mt-6 bg-card rounded-t-xl relative">
         <div className="space-y-5">
           <div>
             <div className="flex items-end justify-between mb-2">
