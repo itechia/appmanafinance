@@ -172,14 +172,14 @@ export default function CardsPage() {
             </Alert>
           )}
 
-          <div className="flex justify-end">
+          <div className="flex w-full sm:justify-end">
             <Button
-              className="gap-2 bg-primary hover:bg-primary/90 h-9 px-3"
+              className="gap-2 bg-primary hover:bg-primary/90 rounded-full sm:rounded-md h-10 px-4 shadow-lg sm:shadow-none w-full sm:w-auto"
               onClick={handleAddWallet}
               disabled={!canAddWallet}
             >
-              <Plus className="h-4 w-4" />
-              Adicionar Carteira
+              <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
+              <span>Adicionar Carteira</span>
             </Button>
           </div>
 
@@ -242,14 +242,14 @@ export default function CardsPage() {
             </Alert>
           )}
 
-          <div className="flex justify-end">
+          <div className="flex w-full sm:justify-end">
             <Button
-              className="gap-2 bg-primary hover:bg-primary/90 h-9 px-3"
+              className="gap-2 bg-primary hover:bg-primary/90 rounded-full sm:rounded-md h-10 px-4 shadow-lg sm:shadow-none w-full sm:w-auto"
               onClick={handleAddCard}
               disabled={!canAddCard}
             >
-              <Plus className="h-4 w-4" />
-              Adicionar Cartão
+              <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
+              <span>Adicionar Cartão</span>
             </Button>
           </div>
 

@@ -15,37 +15,37 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 const assistantPersonalities = [
   {
-    id: "professional",
+    id: "profissional",
     label: "Profissional",
     description: "Formal e direto ao ponto",
     icon: "💼",
   },
   {
-    id: "friendly",
+    id: "amigavel",
     label: "Amigável",
     description: "Casual e acolhedor",
     icon: "😊",
   },
   {
-    id: "funny",
+    id: "engracado",
     label: "Engraçado",
     description: "Descontraído com humor",
     icon: "😄",
   },
   {
-    id: "motivational",
+    id: "motivacional",
     label: "Motivacional",
     description: "Inspirador e encorajador",
     icon: "💪",
   },
   {
-    id: "christian",
+    id: "cristao",
     label: "Cristão",
     description: "Com referências bíblicas e fé",
     icon: "🙏",
   },
   {
-    id: "minimalist",
+    id: "minimalista",
     label: "Minimalista",
     description: "Respostas curtas e objetivas",
     icon: "✨",
@@ -105,8 +105,8 @@ export function WhatsAppSettings() {
     : (profilePhone || "")
 
   const [phone, setPhone] = useState(initialPhone)
-  const [selectedPersonalities, setSelectedPersonalities] = useState<string[]>(currentUser?.whatsappPersonalities || ["professional"])
-  const [gender, setGender] = useState<string>(currentUser?.whatsappGender || "male")
+  const [selectedPersonalities, setSelectedPersonalities] = useState<string[]>(currentUser?.whatsappPersonalities || ["profissional"])
+  const [gender, setGender] = useState<string>(currentUser?.whatsappGender || "masculino")
   const [defaultDebitAccount, setDefaultDebitAccount] = useState<string>(currentUser?.whatsappDefaultDebitAccount || "")
   const [defaultCreditCard, setDefaultCreditCard] = useState<string>(currentUser?.whatsappDefaultCreditCard || "")
   const [isLoading, setIsLoading] = useState(false)
@@ -214,14 +214,14 @@ export function WhatsAppSettings() {
           <Label>Gênero</Label>
           <RadioGroup value={gender} onValueChange={setGender} className="flex gap-4">
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="male" id="male" />
-              <Label htmlFor="male" className="font-normal cursor-pointer">
+              <RadioGroupItem value="masculino" id="masculino" />
+              <Label htmlFor="masculino" className="font-normal cursor-pointer">
                 Homem
               </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="female" id="female" />
-              <Label htmlFor="female" className="font-normal cursor-pointer">
+              <RadioGroupItem value="feminino" id="feminino" />
+              <Label htmlFor="feminino" className="font-normal cursor-pointer">
                 Mulher
               </Label>
             </div>
