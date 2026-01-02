@@ -188,26 +188,26 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
                   <div className="flex flex-col gap-0.5 w-full items-center overflow-hidden">
                     {/* INCOME */}
                     {incomeTotal > 0 && (
-                      <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-secondary px-0.5 py-0.5 bg-secondary/20 rounded truncate">
-                        +{formatCurrency(incomeTotal)}
+                      <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-900/30 px-0.5 py-0.5 rounded truncate">
+                        +{incomeTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </div>
                     )}
                     {/* INVESTMENTS (Blue) */}
                     {investmentTotal > 0 && (
-                      <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-cyan-600 px-0.5 py-0.5 bg-cyan-100 dark:bg-cyan-900/30 rounded truncate">
-                        -{formatCurrency(investmentTotal)}
+                      <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-cyan-700 bg-cyan-100 dark:text-cyan-300 dark:bg-cyan-900/30 px-0.5 py-0.5 rounded truncate">
+                        -{investmentTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </div>
                     )}
                     {/* EXPENSES (Red) */}
                     {totalDailyExpense > 0 && (
-                      <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-destructive px-0.5 py-0.5 bg-destructive/20 rounded truncate">
-                        -{formatCurrency(totalDailyExpense)}
+                      <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/30 px-0.5 py-0.5 rounded truncate">
+                        -{totalDailyExpense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </div>
                     )}
                     {/* CREDIT PURCHASES (Yellow) */}
                     {creditTotal > 0 && (
-                      <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-amber-500 px-0.5 py-0.5 bg-amber-500/10 rounded truncate">
-                        {formatCurrency(creditTotal)}
+                      <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30 px-0.5 py-0.5 rounded truncate">
+                        {creditTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </div>
                     )}
                   </div>

@@ -23,6 +23,7 @@ export default function CardsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [dialogType, setDialogType] = useState<"card" | "wallet">("card")
   const [editingData, setEditingData] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState("wallets")
 
   // State for paying invoice
   // Updated to include month/year for history payments
@@ -143,9 +144,31 @@ export default function CardsPage() {
             Gerencie seus cartões, débito, crédito e carteiras digitais
           </p>
         </div>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          {activeTab === "wallets" ? (
+            <Button
+              className="gap-2 bg-primary hover:bg-primary/90 rounded-full sm:rounded-md h-10 px-4 shadow-lg sm:shadow-none w-full sm:w-auto"
+              onClick={handleAddWallet}
+              disabled={!canAddWallet}
+            >
+              <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
+              <span>Adicionar Carteira</span>
+            </Button>
+          ) : (
+            <Button
+              className="gap-2 bg-primary hover:bg-primary/90 rounded-full sm:rounded-md h-10 px-4 shadow-lg sm:shadow-none w-full sm:w-auto"
+              onClick={handleAddCard}
+              disabled={!canAddCard}
+            >
+              <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
+              <span>Adicionar Cartão</span>
+            </Button>
+          )}
+        </div>
       </div>
 
-      <Tabs defaultValue="wallets" className="space-y-4 md:space-y-6">
+      <Tabs defaultValue="wallets" value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
         <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:inline-grid justify-center">
           <TabsTrigger value="wallets" className="text-xs md:text-sm">
             Carteiras
@@ -172,16 +195,7 @@ export default function CardsPage() {
             </Alert>
           )}
 
-          <div className="flex w-full sm:justify-end">
-            <Button
-              className="gap-2 bg-primary hover:bg-primary/90 rounded-full sm:rounded-md h-10 px-4 shadow-lg sm:shadow-none w-full sm:w-auto"
-              onClick={handleAddWallet}
-              disabled={!canAddWallet}
-            >
-              <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
-              <span>Adicionar Carteira</span>
-            </Button>
-          </div>
+
 
           {wallets.length > 0 && (
             <Card className="p-4 md:p-6">
@@ -242,16 +256,7 @@ export default function CardsPage() {
             </Alert>
           )}
 
-          <div className="flex w-full sm:justify-end">
-            <Button
-              className="gap-2 bg-primary hover:bg-primary/90 rounded-full sm:rounded-md h-10 px-4 shadow-lg sm:shadow-none w-full sm:w-auto"
-              onClick={handleAddCard}
-              disabled={!canAddCard}
-            >
-              <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
-              <span>Adicionar Cartão</span>
-            </Button>
-          </div>
+
 
           {creditCardStats.cards.length > 0 && (
             <Card className="p-4 md:p-6">
