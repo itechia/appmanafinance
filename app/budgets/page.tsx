@@ -13,6 +13,7 @@ import { formatCurrency } from "@/lib/utils"
 
 export default function BudgetsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false)
   const [editingBudget, setEditingBudget] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("budgets")
 
@@ -73,21 +74,33 @@ export default function BudgetsPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            className="gap-2 bg-primary hover:bg-primary/90 hidden sm:flex"
-            onClick={() => setIsDialogOpen(true)}
-          >
-            <Plus className="h-4 w-4" />
-            <span>Novo Orçamento</span>
-          </Button>
+          {activeTab === "budgets" ? (
+            <>
+              <Button
+                className="gap-2 bg-primary hover:bg-primary/90 hidden sm:flex"
+                onClick={() => setIsDialogOpen(true)}
+              >
+                <Plus className="h-4 w-4" />
+                <span>Novo Orçamento</span>
+              </Button>
 
-          <Button
-            size="icon"
-            className="bg-primary hover:bg-primary/90 sm:hidden rounded-full h-10 w-10 shadow-lg"
-            onClick={() => setIsDialogOpen(true)}
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
+              <Button
+                size="icon"
+                className="bg-primary hover:bg-primary/90 sm:hidden rounded-full h-10 w-10 shadow-lg"
+                onClick={() => setIsDialogOpen(true)}
+              >
+                <Plus className="h-5 w-5" />
+              </Button>
+            </>
+          ) : (
+            <Button
+              className="gap-2 bg-primary hover:bg-primary/90 rounded-full sm:rounded-md h-10 px-4 shadow-lg sm:shadow-none w-full sm:w-auto"
+              onClick={() => setIsCategoryDialogOpen(true)}
+            >
+              <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
+              <span>Nova Categoria</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -146,7 +159,10 @@ export default function BudgetsPage() {
         </TabsContent>
 
         <TabsContent value="categories">
-          <CategoryManager />
+          <CategoryManager
+            isOpen={isCategoryDialogOpen}
+            onOpenChange={setIsCategoryDialogOpen}
+          />
         </TabsContent>
       </Tabs>
 

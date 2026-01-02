@@ -36,7 +36,7 @@ interface TransactionListProps {
 }
 
 export function TransactionList({ searchQuery = "", selectedUserIds = [], filters }: TransactionListProps) {
-  const { transactions: contextTransactions, deleteTransaction, currentUser, wallets, cards } = useUser()
+  const { transactions: contextTransactions, deleteTransaction, currentUser, wallets, cards, selectedDate } = useUser()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [editTransaction, setEditTransaction] = useState<any>(null)
   const { toast } = useToast()
@@ -105,10 +105,11 @@ export function TransactionList({ searchQuery = "", selectedUserIds = [], filter
       if (filters?.period) {
         const txDate = new Date(transaction.date)
         const today = new Date()
+        const referenceDate = selectedDate || new Date()
 
         if (filters.period === 'month') {
-          const start = startOfMonth(today)
-          const end = endOfMonth(today)
+          const start = startOfMonth(referenceDate)
+          const end = endOfMonth(referenceDate)
           matchesPeriod = isWithinInterval(txDate, { start, end })
         } else if (filters.period === 'last-month') {
           const start = startOfMonth(subMonths(today, 1))
@@ -139,7 +140,7 @@ export function TransactionList({ searchQuery = "", selectedUserIds = [], filter
     // Sort by Date Ascending (Oldest to Newest)
     return result.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-  }, [contextTransactions, searchQuery, selectedUserIds, filters])
+  }, [contextTransactions, searchQuery, selectedUserIds, filters, selectedDate])
 
   const handleEdit = (transaction: any) => {
     setEditTransaction(transaction)
@@ -221,8 +222,8 @@ export function TransactionList({ searchQuery = "", selectedUserIds = [], filter
                         {Math.abs(transaction.amount).toLocaleString("pt-BR", {
                           style: "currency",
                           currency: "BRL",
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0,
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
                         })}
                       </span>
                     </div>

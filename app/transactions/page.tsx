@@ -14,8 +14,14 @@ import { useUser } from "@/lib/user-context"
 import { useSearchParams } from "next/navigation"
 
 export default function TransactionsPage() {
+  const { setHeaderDateVisible } = useUser()
   const searchParams = useSearchParams()
   const initialQuery = searchParams.get("category") || ""
+
+  // Ensure header date is visible
+  useState(() => {
+    setHeaderDateVisible(true)
+  })
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
@@ -25,7 +31,7 @@ export default function TransactionsPage() {
   const [typeFilter, setTypeFilter] = useState("all")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [accountFilter, setAccountFilter] = useState("all")
-  const [periodFilter, setPeriodFilter] = useState("next-3-months") // Default per request
+  const [periodFilter, setPeriodFilter] = useState("month") // Default to month for global filter
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
 
   const { toast } = useToast()
@@ -46,7 +52,7 @@ export default function TransactionsPage() {
       setTypeFilter("all")
       setCategoryFilter("all")
       setAccountFilter("all")
-      setPeriodFilter("next-3-months")
+      setPeriodFilter("month")
       setDateRange(undefined)
       toast({
         title: "Filtros redefinidos",
@@ -76,14 +82,6 @@ export default function TransactionsPage() {
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Nova Transação</span>
               <span className="sm:hidden">Nova</span>
-            </Button>
-            <Button
-              variant="outline"
-              className={`gap-2 h-9 px-3 bg-transparent ${isFilterOpen ? "bg-muted" : ""}`}
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-            >
-              <Filter className="h-4 w-4" />
-              <span className="hidden sm:inline">Filtros</span>
             </Button>
             <Button variant="outline" className="gap-2 h-9 px-3 bg-transparent" onClick={handleExport}>
               <Download className="h-4 w-4" />

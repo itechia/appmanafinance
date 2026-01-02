@@ -133,6 +133,7 @@ export function WhatsAppSettings() {
 
   const handleSave = async () => {
     setIsLoading(true)
+    console.log("WhatsAppSettings: Starting save...")
     try {
       await updateUserProfile({
         whatsappEnabled: enabled,
@@ -143,11 +144,13 @@ export function WhatsAppSettings() {
         whatsappDefaultDebitAccount: defaultDebitAccount,
         whatsappDefaultCreditCard: defaultCreditCard
       })
+      console.log("WhatsAppSettings: Save successful")
       // updateUserProfile handles Success Toast
     } catch (error) {
-      console.error(error)
+      console.error("WhatsAppSettings: Save error", error)
       // updateUserProfile handles Error Toast
     } finally {
+      console.log("WhatsAppSettings: Resetting loading state")
       setIsLoading(false)
     }
   }

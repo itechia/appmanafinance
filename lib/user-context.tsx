@@ -321,7 +321,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const totalInstallments = transaction.installmentsTotal || 1
     const recurrenceId = (recurrence !== 'single') ? `rec-${Date.now()}` : undefined
 
-    const count = recurrence === 'installments' ? totalInstallments : (recurrence === 'fixed' ? 12 : 1)
+    // For fixed, use provided count (from dialog) or default to 12 (indefinite simulation)
+    // We expect 'recurrenceCount' in the object if passed from Dialog
+    const explicitCount = (transaction as any).recurrenceCount
+    const count = recurrence === 'installments' ? totalInstallments : (recurrence === 'fixed' ? (explicitCount && explicitCount > 0 ? explicitCount : 12) : 1)
 
     let installmentValue = transaction.amount
     if (recurrence === 'installments' && totalInstallments > 1) {
@@ -820,10 +823,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
     if (profile.whatsappCmdBalance !== undefined) dbProfile.whatsapp_cmd_balance = profile.whatsappCmdBalance
     if (profile.whatsappCmdTransactions !== undefined) dbProfile.whatsapp_cmd_transactions = profile.whatsappCmdTransactions
 
+    console.log("UserContext: updateUserProfile called", { userId, dbProfileKeys: Object.keys(dbProfile) })
+
     try {
       const { error } = await supabase.from('profiles').update(dbProfile).eq('id', userId)
 
-      if (error) throw error
+      if (error) {
+        console.error("UserContext: Supabase update failed", error)
+        throw error
+      }
+
+      console.log("UserContext: Supabase update success")
 
       // Optimistic update of local state
       setUserProfile((prev: any) => ({
@@ -839,7 +849,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       toast({ title: "Perfil atualizado", description: "As alterações foram salvas." })
 
       // Trigger refresh in background without blocking UI
-      refreshData()
+      refreshData().catch(e => console.error("UserContext: refreshData failed", e))
 
     } catch (error) {
       console.error("Error updating profile", error)

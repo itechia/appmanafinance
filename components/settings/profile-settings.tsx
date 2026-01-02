@@ -83,26 +83,39 @@ export function ProfileSettings() {
   }
 
   const handleSave = async () => {
+    // Basic validation
+    if (!fullName.trim()) {
+      toast({
+        title: "Erro",
+        description: "Nome é obrigatório",
+        variant: "destructive"
+      })
+      return
+    }
+
     setIsSubmitting(true)
+    console.log("ProfileSettings: Starting save...")
 
     try {
       let avatarUrl = profileImage
 
       // If a new file was selected, upload it first
       if (selectedFile) {
+        console.log("ProfileSettings: Uploading avatar...")
         const uploadedUrl = await uploadAvatar(selectedFile)
         if (uploadedUrl) {
           avatarUrl = uploadedUrl
+          console.log("ProfileSettings: Avatar uploaded")
         } else {
           // If upload fails, keep existing or fallback
+          console.warn("ProfileSettings: Avatar upload returned null")
           avatarUrl = currentUser?.avatar || null
         }
       }
 
+      console.log("ProfileSettings: Updating profile in context...")
       await updateUserProfile({
         name: fullName.trim(),
-        // Derived firstName/lastName are handled if needed, or rely on full name split in context backend or handle here.
-        // The component logic already split it:
         firstName: fullName.trim().split(" ")[0] || "",
         lastName: fullName.trim().split(" ").slice(1).join(" ") || "",
         email: email.trim(),
@@ -112,18 +125,17 @@ export function ProfileSettings() {
         bio: bio.trim(),
         avatar: avatarUrl || undefined,
       })
+      console.log("ProfileSettings: Profile updated successfully")
 
-      // Success toast is now handled in updateUserProfile context call to be consistent.
-      // But we can keep it here if we want component-level feedback. 
-      // Actually, let's rely on context for state update confirmation or keep it simple.
-      // Context has toast("Perfil atualizado").
-
-      // We don't need another toast here.
     } catch (error) {
       console.error("Profile save error:", error)
-      // Context already toasted "Erro", so we don't need to duplicate it, 
-      // but catching here ensures isSubmitting goes to false.
+      toast({
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro ao atualizar o perfil. Tente novamente.",
+        variant: "destructive"
+      })
     } finally {
+      console.log("ProfileSettings: Resetting submitting state")
       setIsSubmitting(false)
     }
   }

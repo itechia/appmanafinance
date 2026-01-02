@@ -4,8 +4,9 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import type { Transaction, Card as CreditCard, Wallet } from "@/lib/types/app-types"
 import { PayInvoiceDialog } from "@/components/dashboard/pay-invoice-dialog"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { formatCurrency } from "@/lib/utils"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn, formatCurrency } from "@/lib/utils"
+import { isSameMonth, format } from "date-fns"
 
 interface TransactionCalendarProps {
   transactions: Transaction[]
@@ -96,207 +97,216 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
         </div>
       </div>
 
-      <TooltipProvider delayDuration={0}>
-        <div className="grid grid-cols-7 gap-0.5 md:gap-1 lg:gap-2">
-          {dayNames.map((name) => (
-            <div key={name} className="text-center text-[10px] md:text-xs font-medium text-muted-foreground py-1 md:py-2">
-              {name}
-            </div>
-          ))}
 
-          {days.map((day, index) => {
-            if (day === null) {
-              return <div key={`empty-${index}`} className="aspect-square" />
-            }
+      <div className="grid grid-cols-7 gap-0.5 md:gap-1 lg:gap-2">
+        {dayNames.map((name) => (
+          <div key={name} className="text-center text-[10px] md:text-xs font-medium text-muted-foreground py-1 md:py-2">
+            {name}
+          </div>
+        ))}
 
-            const dayTransactions = transactions.filter((t) => {
-              const tDate = new Date(t.date)
-              return (
-                tDate.getDate() === day &&
-                tDate.getMonth() === month &&
-                tDate.getFullYear() === year
-              )
-            })
+        {days.map((day, index) => {
+          if (day === null) {
+            return <div key={`empty-${index}`} className="aspect-square" />
+          }
 
-            const incomeList = dayTransactions.filter((t) => t.type === "income")
-            const incomeTotal = incomeList.reduce((sum, t) => sum + t.amount, 0)
+          const dayTransactions = transactions.filter((t) => {
+            const tDate = new Date(t.date)
+            return (
+              tDate.getDate() === day &&
+              tDate.getMonth() === month &&
+              tDate.getFullYear() === year
+            )
+          })
 
-            const expenseList = dayTransactions.filter((t) => {
-              if (t.type !== 'expense') return false
-              const card = cards.find(c => c.id === t.account)
-              if (card) {
-                const isCreditOp = t.cardFunction === 'credit' || (card.type === 'credit' && t.cardFunction !== 'debit')
-                if (isCreditOp) return false
-              }
-              if (t.category === 'Investimentos') return false
-              return true
-            })
+          const incomeList = dayTransactions.filter((t) => t.type === "income")
+          const incomeTotal = incomeList.reduce((sum, t) => sum + t.amount, 0)
 
-            const investmentList = dayTransactions.filter(t => t.type === 'expense' && t.category === 'Investimentos')
-            const investmentTotal = investmentList.reduce((sum, t) => sum + Math.abs(t.amount), 0)
-
-            const creditList = dayTransactions.filter((t) => {
-              if (t.type !== 'expense') return false
-              const card = cards.find(c => c.id === t.account)
-              if (!card) return false
-
+          const expenseList = dayTransactions.filter((t) => {
+            if (t.type !== 'expense') return false
+            const card = cards.find(c => c.id === t.account)
+            if (card) {
               const isCreditOp = t.cardFunction === 'credit' || (card.type === 'credit' && t.cardFunction !== 'debit')
-              if (!isCreditOp) return false
+              if (isCreditOp) return false
+            }
+            if (t.category === 'Investimentos') return false
+            return true
+          })
 
-              if (t.installmentNumber && t.installmentNumber > 1) {
-                return false
-              }
-              return true
-            })
+          const investmentList = dayTransactions.filter(t => t.type === 'expense' && t.category === 'Investimentos')
+          const investmentTotal = investmentList.reduce((sum, t) => sum + Math.abs(t.amount), 0)
 
-            const creditTotal = creditList.reduce((sum, t) => {
-              const transactionTotal = (t.installmentsTotal && t.installmentsTotal > 1)
-                ? t.amount * t.installmentsTotal
-                : t.amount
-              return sum + Math.abs(transactionTotal)
-            }, 0)
+          const creditList = dayTransactions.filter((t) => {
+            if (t.type !== 'expense') return false
+            const card = cards.find(c => c.id === t.account)
+            if (!card) return false
 
-            const dueInvoices = getInvoiceForDay(day)
-            const invoiceTotal = dueInvoices.reduce((sum, i) => sum + i.amount, 0)
-            const expenseTotal = expenseList.reduce((sum, t) => sum + Math.abs(t.amount), 0)
-            const totalDailyExpense = expenseTotal + invoiceTotal
+            const isCreditOp = t.cardFunction === 'credit' || (card.type === 'credit' && t.cardFunction !== 'debit')
+            if (!isCreditOp) return false
 
-            const hasTransactions = incomeTotal > 0 || totalDailyExpense > 0 || creditTotal > 0
-            const isToday =
-              day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()
+            if (t.installmentNumber && t.installmentNumber > 1) {
+              return false
+            }
+            return true
+          })
 
-            const TransactionTooltip = ({ title, items, total, colorClass, type }: { title: string, items: any[], total: number, colorClass: string, type: 'income' | 'expense' | 'credit' | 'investment' }) => (
-              <TooltipContent className="p-0 border-0 shadow-xl rounded-lg overflow-hidden w-64 z-[60]">
-                <div className="bg-background border rounded-lg overflow-hidden shadow-2xl ring-1 ring-border/50">
-                  <div className={`px-3 py-2 text-xs font-semibold text-white flex justify-between items-center ${type === 'income' ? 'bg-emerald-500' :
-                    type === 'expense' ? 'bg-rose-500' :
-                      type === 'investment' ? 'bg-cyan-500' : 'bg-amber-500'
-                    }`}>
-                    <span>{title}</span>
-                    <span>{formatCurrency(total)}</span>
+          const creditTotal = creditList.reduce((sum, t) => {
+            const transactionTotal = (t.installmentsTotal && t.installmentsTotal > 1)
+              ? t.amount * t.installmentsTotal
+              : t.amount
+            return sum + Math.abs(transactionTotal)
+          }, 0)
+
+          const dueInvoices = getInvoiceForDay(day)
+          const invoiceTotal = dueInvoices.reduce((sum, i) => sum + i.amount, 0)
+          const expenseTotal = expenseList.reduce((sum, t) => sum + Math.abs(t.amount), 0)
+          const totalDailyExpense = expenseTotal + invoiceTotal
+
+          const hasTransactions = incomeTotal > 0 || totalDailyExpense > 0 || creditTotal > 0
+          const isToday =
+            day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()
+
+          const combinedExpenseItems = [
+            ...expenseList.map(t => ({ ...t, amount: Math.abs(t.amount) })),
+            ...dueInvoices.map(inv => ({ description: `Fatura ${inv.card.name}`, amount: inv.amount, category: 'Cartão de Crédito', card: inv.card }))
+          ]
+
+          return (
+            <Popover key={day}>
+              <PopoverTrigger asChild>
+                <div
+                  className={cn(
+                    "aspect-square border rounded-md md:rounded-lg p-0.5 md:p-1 lg:p-2 flex flex-col items-center justify-start text-xs relative cursor-pointer active:scale-95 transition-transform",
+                    isToday ? "border-primary bg-primary/5" : "border-border",
+                    hasTransactions ? "bg-muted/30" : ""
+                  )}
+                >
+                  <span className={cn("font-medium mb-0.5 text-[10px] md:text-xs", isToday ? "text-primary" : "")}>
+                    {day}
+                  </span>
+
+                  <div className="flex flex-col gap-0.5 w-full items-center overflow-hidden">
+                    {/* INCOME */}
+                    {incomeTotal > 0 && (
+                      <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-secondary px-0.5 py-0.5 bg-secondary/20 rounded truncate">
+                        +{formatCurrency(incomeTotal)}
+                      </div>
+                    )}
+                    {/* INVESTMENTS (Blue) */}
+                    {investmentTotal > 0 && (
+                      <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-cyan-600 px-0.5 py-0.5 bg-cyan-100 dark:bg-cyan-900/30 rounded truncate">
+                        -{formatCurrency(investmentTotal)}
+                      </div>
+                    )}
+                    {/* EXPENSES (Red) */}
+                    {totalDailyExpense > 0 && (
+                      <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-destructive px-0.5 py-0.5 bg-destructive/20 rounded truncate">
+                        -{formatCurrency(totalDailyExpense)}
+                      </div>
+                    )}
+                    {/* CREDIT PURCHASES (Yellow) */}
+                    {creditTotal > 0 && (
+                      <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-amber-500 px-0.5 py-0.5 bg-amber-500/10 rounded truncate">
+                        {formatCurrency(creditTotal)}
+                      </div>
+                    )}
                   </div>
-                  <div className="p-2 space-y-2 bg-card/95 backdrop-blur-sm">
-                    <div className="max-h-[200px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                      {items.length > 0 ? items.map((item: any, i: number) => (
-                        <div key={i} className="flex flex-col gap-0.5 pb-2 border-b last:border-0 last:pb-0 border-border/40">
-                          <div className="flex justify-between items-start gap-2">
-                            <span className="text-xs font-medium truncate text-foreground/90">{item.description || item.card?.name}</span>
-                            <span className={`text-xs font-bold whitespace-nowrap ${colorClass}`}>
-                              {item.displayValue || formatCurrency(item.amount)}
-                            </span>
+                </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-0 overflow-hidden shadow-2xl z-[60]" align="center">
+                <div className="bg-primary/5 p-3 border-b flex justify-between items-center">
+                  <span className="font-semibold text-sm">{day} de {["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"][month]}</span>
+                  <span className="text-xs text-muted-foreground">{year}</span>
+                </div>
+                <div className="max-h-[300px] overflow-y-auto custom-scrollbar p-0">
+                  {/* Detailed Lists */}
+                  {hasTransactions ? (
+                    <div className="space-y-0">
+                      {incomeTotal > 0 && (
+                        <div className="p-3 border-b border-border/50">
+                          <div className="text-xs font-bold text-emerald-500 mb-2 flex justify-between">
+                            <span>Receitas</span>
+                            <span>{formatCurrency(incomeTotal)}</span>
                           </div>
-                          <div className="flex justify-between items-center text-[10px] text-muted-foreground">
-                            <span className="truncate max-w-[120px]">{item.category || (item.card ? 'Fatura Cartão' : 'Outros')}</span>
-                            {item.account && !item.card && <span>{getAccountName(item.account)}</span>}
+                          <div className="space-y-2">
+                            {incomeList.map((item, i) => (
+                              <div key={i} className="flex justify-between items-start text-xs">
+                                <span className="text-muted-foreground truncate max-w-[150px]">{item.description}</span>
+                                <span className="font-medium">{formatCurrency(item.amount)}</span>
+                              </div>
+                            ))}
                           </div>
                         </div>
-                      )) : (
-                        <p className="text-xs text-muted-foreground text-center py-2">Sem detalhes</p>
+                      )}
+
+                      {investmentTotal > 0 && (
+                        <div className="p-3 border-b border-border/50">
+                          <div className="text-xs font-bold text-cyan-600 mb-2 flex justify-between">
+                            <span>Investimentos</span>
+                            <span>{formatCurrency(investmentTotal)}</span>
+                          </div>
+                          <div className="space-y-2">
+                            {investmentList.map((item, i) => (
+                              <div key={i} className="flex justify-between items-start text-xs">
+                                <span className="text-muted-foreground truncate max-w-[150px]">{item.description}</span>
+                                <span className="font-medium">{formatCurrency(Math.abs(item.amount))}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {totalDailyExpense > 0 && (
+                        <div className="p-3 border-b border-border/50">
+                          <div className="text-xs font-bold text-rose-500 mb-2 flex justify-between">
+                            <span>Despesas</span>
+                            <span>{formatCurrency(totalDailyExpense)}</span>
+                          </div>
+                          <div className="space-y-2">
+                            {combinedExpenseItems.map((item, i) => (
+                              <div key={i} className="flex justify-between items-start text-xs">
+                                <span className="text-muted-foreground truncate max-w-[150px]">{item.description || (item as any).card?.name}</span>
+                                <span className="font-medium">{formatCurrency(item.amount)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {creditTotal > 0 && (
+                        <div className="p-3">
+                          <div className="text-xs font-bold text-amber-500 mb-2 flex justify-between">
+                            <span>No Crédito</span>
+                            <span>{formatCurrency(creditTotal)}</span>
+                          </div>
+                          <div className="space-y-2">
+                            {creditList.map((item, i) => (
+                              <div key={i} className="flex justify-between items-start text-xs">
+                                <span className="text-muted-foreground truncate max-w-[150px]">{item.description}</span>
+                                <div className="text-right">
+                                  <span className="font-medium block">{formatCurrency(Math.abs(item.amount))}</span>
+                                  {item.installmentsTotal && item.installmentsTotal > 1 && (
+                                    <span className="text-[9px] text-muted-foreground">{item.installmentsTotal}x</span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
-                  </div>
-                </div>
-              </TooltipContent>
-            )
-
-            const combinedExpenseItems = [
-              ...expenseList.map(t => ({ ...t, amount: Math.abs(t.amount) })),
-              ...dueInvoices.map(inv => ({ description: `Fatura ${inv.card.name}`, amount: inv.amount, category: 'Cartão de Crédito', card: inv.card }))
-            ]
-
-            return (
-              <div
-                key={day}
-                className={`aspect-square border rounded-md md:rounded-lg p-0.5 md:p-1 lg:p-2 flex flex-col items-center justify-start text-xs relative ${isToday ? "border-primary bg-primary/5" : "border-border"
-                  } ${hasTransactions ? "bg-muted/30" : ""}`}
-              >
-                <span className={`font-medium mb-0.5 text-[10px] md:text-xs ${isToday ? "text-primary" : ""}`}>
-                  {day}
-                </span>
-
-                <div className="flex flex-col gap-0.5 w-full items-center overflow-hidden">
-                  {/* INCOME */}
-                  {incomeTotal > 0 && (
-                    <Tooltip delayDuration={0}>
-                      <TooltipTrigger asChild>
-                        <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-secondary px-0.5 py-0.5 bg-secondary/20 rounded truncate cursor-help hover:bg-secondary/30 transition-colors">
-                          +{formatCurrency(incomeTotal)}
-                        </div>
-                      </TooltipTrigger>
-                      <TransactionTooltip
-                        title="Receitas do Dia"
-                        items={incomeList}
-                        total={incomeTotal}
-                        colorClass="text-emerald-500"
-                        type="income"
-                      />
-                    </Tooltip>
-                  )}
-                  {/* INVESTMENTS (Blue) */}
-                  {investmentTotal > 0 && (
-                    <Tooltip delayDuration={0}>
-                      <TooltipTrigger asChild>
-                        <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-cyan-600 px-0.5 py-0.5 bg-cyan-100 dark:bg-cyan-900/30 rounded truncate cursor-help hover:bg-cyan-200 dark:hover:bg-cyan-900/50 transition-colors">
-                          -{formatCurrency(investmentTotal)}
-                        </div>
-                      </TooltipTrigger>
-                      <TransactionTooltip
-                        title="Investimentos"
-                        items={investmentList}
-                        total={investmentTotal}
-                        colorClass="text-cyan-600"
-                        type="investment"
-                      />
-                    </Tooltip>
-                  )}
-
-                  {/* EXPENSES (Red) */}
-                  {totalDailyExpense > 0 && (
-                    <Tooltip delayDuration={0}>
-                      <TooltipTrigger asChild>
-                        <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-destructive px-0.5 py-0.5 bg-destructive/20 rounded truncate cursor-help hover:bg-destructive/30 transition-colors">
-                          -{formatCurrency(totalDailyExpense)}
-                        </div>
-                      </TooltipTrigger>
-                      <TransactionTooltip
-                        title="Despesas do Dia"
-                        items={combinedExpenseItems}
-                        total={totalDailyExpense}
-                        colorClass="text-rose-500"
-                        type="expense"
-                      />
-                    </Tooltip>
-                  )}
-
-                  {/* CREDIT PURCHASES (Yellow) */}
-                  {creditTotal > 0 && (
-                    <Tooltip delayDuration={0}>
-                      <TooltipTrigger asChild>
-                        <div className="w-full text-center text-[9px] md:text-[10px] font-extrabold text-amber-500 px-0.5 py-0.5 bg-amber-500/10 rounded truncate cursor-help hover:bg-amber-500/20 transition-colors">
-                          {formatCurrency(creditTotal)}
-                        </div>
-                      </TooltipTrigger>
-                      <TransactionTooltip
-                        title="Compras no Crédito"
-                        items={creditList.map(t => ({
-                          ...t,
-                          amount: Math.abs(t.amount),
-                          displayValue: (t.installmentsTotal && t.installmentsTotal > 1)
-                            ? `${t.installmentsTotal}x ${formatCurrency(Math.abs(t.amount))}`
-                            : undefined
-                        }))}
-                        total={creditTotal}
-                        colorClass="text-amber-500"
-                        type="credit"
-                      />
-                    </Tooltip>
+                  ) : (
+                    <div className="p-4 text-center text-xs text-muted-foreground">
+                      Sem transações neste dia.
+                    </div>
                   )}
                 </div>
-              </div>
-            )
-          })}
-        </div>
-      </TooltipProvider>
+              </PopoverContent>
+            </Popover>
+          )
+        })}
+      </div>
+
 
       <div className="mt-4 md:mt-6 flex flex-wrap items-center justify-center gap-4">
         <div className="flex items-center gap-1.5 md:gap-2">

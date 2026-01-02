@@ -20,6 +20,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname()
   const isDashboard = pathname === "/"
   const isBudgets = pathname === "/budgets"
+  const isTransactions = pathname === "/transactions"
 
   const [showNotifications, setShowNotifications] = useState(false)
   const { unreadCount, selectedDate, setSelectedDate, headerDateVisible } = useUser()
@@ -62,7 +63,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           <Menu className="h-4 w-4 md:h-5 md:w-5" />
         </Button>
 
-        {(isDashboard || isBudgets) && headerDateVisible ? (
+        {(isDashboard || isBudgets || isTransactions) && headerDateVisible ? (
           <div className="flex items-center gap-1 md:gap-3">
             <div className="flex items-center gap-1">
               <Button

@@ -10,8 +10,12 @@ import { Label } from "@/components/ui/label"
 import { useUser } from "@/lib/user-context"
 import { useToast } from "@/hooks/use-toast"
 
-export function CategoryManager() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+interface CategoryManagerProps {
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function CategoryManager({ isOpen, onOpenChange }: CategoryManagerProps) {
   const [filter, setFilter] = useState<"all" | "income" | "expense">("all")
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -21,10 +25,13 @@ export function CategoryManager() {
     type: "expense" as "income" | "expense",
   })
 
+  // Sync internal editing state with external open prop if needed, or handle exclusively with props.
+  // Actually, standard pattern is parent controls open state.
+
   const { categories, transactions, addCategory, updateCategory, deleteCategory, currentUser } = useUser()
   const { toast } = useToast()
 
-  console.log("CategoryManager: Rendered. CurrentUser:", currentUser)
+  // console.log("CategoryManager: Rendered. CurrentUser:", currentUser)
 
   const filteredCategories = categories.filter((cat) => filter === "all" || cat.type === filter)
 
@@ -36,7 +43,7 @@ export function CategoryManager() {
   const handleEdit = (category: (typeof categories)[0]) => {
     setEditingId(category.id)
     setFormData({ name: category.name, icon: category.icon, color: category.color, type: category.type })
-    setIsDialogOpen(true)
+    onOpenChange(true)
   }
 
   const handleDelete = async (id: string, name: string) => {
@@ -45,8 +52,7 @@ export function CategoryManager() {
   }
 
   const handleSubmit = async () => {
-    // window.alert("DEBUG: HandleSubmit clicked!")
-    console.log("CategoryManager: handleSubmit triggered", { formData, editingId })
+    // console.log("CategoryManager: handleSubmit triggered", { formData, editingId })
     if (!formData.name || !formData.icon) {
       toast({
         title: "Erro",
@@ -59,18 +65,18 @@ export function CategoryManager() {
     if (editingId) {
       const success = await updateCategory(editingId, formData)
       if (success) {
-        setIsDialogOpen(false)
+        onOpenChange(false)
         setEditingId(null)
         setFormData({ name: "", icon: "", color: "#2F404F", type: "expense" })
       }
     } else {
-      console.log("CategoryManager: Calling addCategory from context...", formData);
+      // console.log("CategoryManager: Calling addCategory from context...", formData);
       try {
         const success = await addCategory({ ...formData })
-        console.log("CategoryManager: addCategory result:", success);
+        // console.log("CategoryManager: addCategory result:", success);
 
         if (success) {
-          setIsDialogOpen(false)
+          onOpenChange(false)
           setEditingId(null)
           setFormData({ name: "", icon: "", color: "#2F404F", type: "expense" })
         }
@@ -109,10 +115,7 @@ export function CategoryManager() {
             Receitas
           </Button>
         </div>
-        <Button className="gap-2 bg-primary hover:bg-primary/90" onClick={() => setIsDialogOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Nova Categoria
-        </Button>
+        {/* Button moved to parent */}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -156,9 +159,9 @@ export function CategoryManager() {
       </div>
 
       <Dialog
-        open={isDialogOpen}
+        open={isOpen}
         onOpenChange={(open) => {
-          setIsDialogOpen(open)
+          onOpenChange(open)
           if (!open) {
             setEditingId(null)
             setFormData({ name: "", icon: "", color: "#2F404F", type: "expense" })
@@ -233,7 +236,7 @@ export function CategoryManager() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
             <Button className="bg-primary hover:bg-primary/90" onClick={handleSubmit}>
