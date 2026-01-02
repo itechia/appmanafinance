@@ -77,19 +77,11 @@ export default function BudgetsPage() {
           {activeTab === "budgets" ? (
             <>
               <Button
-                className="gap-2 bg-primary hover:bg-primary/90 hidden sm:flex"
+                className="gap-2 bg-primary hover:bg-primary/90 rounded-full sm:rounded-md h-10 px-4 shadow-lg sm:shadow-none w-full sm:w-auto"
                 onClick={() => setIsDialogOpen(true)}
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
                 <span>Novo Orçamento</span>
-              </Button>
-
-              <Button
-                size="icon"
-                className="bg-primary hover:bg-primary/90 sm:hidden rounded-full h-10 w-10 shadow-lg"
-                onClick={() => setIsDialogOpen(true)}
-              >
-                <Plus className="h-5 w-5" />
               </Button>
             </>
           ) : (

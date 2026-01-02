@@ -180,11 +180,11 @@ export function TransactionDialog({ open, onOpenChange, transaction }: Transacti
       cardFunction: selectedCard ? cardFunction : undefined,
       status: isPaid ? "completed" : "pending",
       isPaid,
-      isRecurring: recurrence === "fixed",
-      // If fixed, use 'installments' (input) as count, but 0/empty means indefinite (handle in context)
+      isRecurring: recurrence === "fixed" || (recurrence === "installments" && (!installments || Number(installments) === 0)),
+      // If fixed, use input as count. If installments is 0/empty, treat as fixed indefinite (0 count).
       recurrenceCount: recurrence === "fixed" ? (Number(installments) || 0) : 0,
-      installmentsTotal: recurrence === "installments" ? Number(installments) : 1,
-      installments: recurrence === "installments" ? Number(installments) : 1,
+      installmentsTotal: recurrence === "installments" && Number(installments) > 0 ? Number(installments) : 1,
+      installments: recurrence === "installments" && Number(installments) > 0 ? Number(installments) : 1,
       attachment: attachment || undefined,
       notes
     }
@@ -479,52 +479,36 @@ export function TransactionDialog({ open, onOpenChange, transaction }: Transacti
                       {recurrence !== 'single' && (
                         <div className="flex flex-col gap-3 animate-in fade-in" onClick={e => e.stopPropagation()}>
                           <div className="flex gap-1 p-1 bg-muted/50 rounded-md w-full">
-                            <button onClick={() => setRecurrence('fixed')} className={cn("flex-1 py-1.5 text-xs font-medium rounded-sm transition-all", recurrence === 'fixed' ? "bg-background shadow-sm text-primary" : "opacity-60 hover:opacity-100")}>Fixa (Mensal)</button>
-                            <button onClick={() => setRecurrence('installments')} className={cn("flex-1 py-1.5 text-xs font-medium rounded-sm transition-all", recurrence === 'installments' ? "bg-background shadow-sm text-primary" : "opacity-60 hover:opacity-100")}>Parcelada</button>
+                            <button onClick={() => setRecurrence('fixed')} className={cn("flex-1 py-1.5 text-[10px] sm:text-xs font-medium rounded-sm transition-all truncate px-1", recurrence === 'fixed' ? "bg-background shadow-sm text-primary" : "opacity-60 hover:opacity-100")}>Fixa (Mensal)</button>
+                            <button onClick={() => setRecurrence('installments')} className={cn("flex-1 py-1.5 text-[10px] sm:text-xs font-medium rounded-sm transition-all truncate px-1", recurrence === 'installments' ? "bg-background shadow-sm text-primary" : "opacity-60 hover:opacity-100")}>Parcelada</button>
                           </div>
 
-                          {/* Installments Input (Divides Amount) */}
-                          {recurrence === 'installments' && (
-                            <div className="flex items-center justify-between bg-background rounded-md border border-input px-2 py-1">
-                              <span className="text-xs text-muted-foreground">Parcelas:</span>
+                          <div className="bg-background rounded-md border border-input px-3 py-2 flex flex-col gap-1">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-muted-foreground font-medium">
+                                {recurrence === 'installments' ? 'Qtd. Parcelas:' : 'Repetições:'}
+                              </span>
                               <div className="flex items-center gap-1">
                                 <Input
                                   type="number"
                                   value={installments}
                                   onChange={(e) => setInstallments(e.target.value)}
-                                  className="h-7 w-12 text-center bg-transparent border-0 p-0 text-sm focus-visible:ring-0"
-                                  placeholder="12"
+                                  className="h-6 w-14 text-right bg-transparent border-0 p-0 text-sm font-semibold focus-visible:ring-0 placeholder:text-muted/30"
+                                  placeholder={recurrence === 'installments' ? "12" : "∞"}
                                 />
-                                <span className="text-xs text-muted-foreground font-medium">x</span>
+                                <span className="text-xs text-muted-foreground ml-1">
+                                  {recurrence === 'installments' ? 'x' : 'meses'}
+                                </span>
                               </div>
                             </div>
-                          )}
 
-                          {/* Fixed Recurrence Count (Custom Count, Same Amount) */}
-                          {recurrence === 'fixed' && (
-                            <div className="flex items-center justify-between bg-background rounded-md border border-input px-2 py-1">
-                              <span className="text-xs text-muted-foreground">Repetições:</span>
-                              <div className="flex items-center gap-1">
-                                <Input
-                                  type="number"
-                                  value={installments} // Reusing installments state logic for count to simplify, or create new 'fixedCount' state?
-                                  // Let's reuse 'installments' state variable but treat it as 'count' when mode is fixed.
-                                  // BUT, user calls it 'installments' for divided, 'fixed' implies infinite usually.
-                                  // User wants "informar quantas vezes vai se repetir". 
-                                  // If I use 'installments' var, I need to ensure logic distinguishes divided vs full.
-                                  onChange={(e) => setInstallments(e.target.value)}
-                                  className="h-7 w-12 text-center bg-transparent border-0 p-0 text-sm focus-visible:ring-0"
-                                  placeholder="∞"
-                                />
-                                <span className="text-xs text-muted-foreground font-medium">meses</span>
-                              </div>
-                            </div>
-                          )}
-                          {recurrence === 'fixed' && (
-                            <p className="text-[10px] text-muted-foreground text-center">
-                              {installments && Number(installments) > 0 ? `Repetir por ${installments} meses` : "Repetir mensalmente (Indefinido)"}
+                            <p className="text-[9px] text-muted-foreground border-t pt-1 mt-1 leading-tight">
+                              {recurrence === 'installments'
+                                ? (installments && Number(installments) > 0 ? `Divide o valor em ${installments}x` : "Valor integral todo mês (Indefinido)")
+                                : (installments && Number(installments) > 0 ? `Repetir por ${installments} meses` : "Repetir até cancelar (Indefinido)")
+                              }
                             </p>
-                          )}
+                          </div>
                         </div>
                       )}
                     </div>

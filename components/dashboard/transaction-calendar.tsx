@@ -317,10 +317,7 @@ export function TransactionCalendar({ transactions, cards, wallets, currentDate,
           <div className="h-2.5 w-2.5 md:h-3 md:w-3 rounded-full bg-destructive" />
           <span className="text-xs md:text-sm text-muted-foreground">Despesas</span>
         </div>
-        <div className="flex items-center gap-1.5 md:gap-2">
-          <div className="h-2.5 w-2.5 md:h-3 md:w-3 rounded-full bg-cyan-500" />
-          <span className="text-xs md:text-sm text-muted-foreground">Investimentos</span>
-        </div>
+
 
         <div className="flex items-center gap-1.5 md:gap-2">
           <div className="h-2.5 w-2.5 md:h-3 md:w-3 rounded-full bg-amber-500" />
