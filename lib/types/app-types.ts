@@ -21,6 +21,8 @@ export interface User {
     whatsappCmdExpenses?: boolean
     whatsappCmdBalance?: boolean
     whatsappCmdTransactions?: boolean
+    stripeCustomerId?: string
+    subscriptionId?: string
 
     // Notification Settings
     notifyBillsDueDaily?: boolean

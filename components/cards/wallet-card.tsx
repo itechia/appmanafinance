@@ -16,28 +16,28 @@ interface WalletCardProps {
 
 export function WalletCard({ name, balance, icon, color, userName, userAvatar }: WalletCardProps) {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
-      <div
-        className="relative p-6 text-white flex flex-col"
-        style={{
-          background: color,
-          minHeight: userName ? "200px" : "160px",
-        }}
-      >
+    <Card
+      className="hover:shadow-md transition-all duration-300 overflow-hidden border-l-4"
+      style={{ borderLeftColor: color }}
+    >
+      <div className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl flex-shrink-0">
+            <div
+              className="h-12 w-12 rounded-full flex items-center justify-center text-2xl flex-shrink-0"
+              style={{ backgroundColor: `${color}20`, color: color }}
+            >
               {icon}
             </div>
             <div className="min-w-0">
-              <p className="text-sm opacity-90">Carteira</p>
-              <h3 className="text-lg font-bold mt-0.5 truncate">{name}</h3>
+              <h3 className="text-xl font-bold truncate" style={{ color: color }}>{name}</h3>
+              <p className="text-xs text-muted-foreground opacity-90">Carteira</p>
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 flex-shrink-0">
-                <MoreVertical className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
+                <MoreVertical className="h-5 w-5 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -49,19 +49,21 @@ export function WalletCard({ name, balance, icon, color, userName, userAvatar }:
           </DropdownMenu>
         </div>
 
-        <div className="mt-auto">
-          <p className="text-xs opacity-75 mb-1">Saldo disponível</p>
-          <p className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
-            {formatCurrency(balance)}
-          </p>
+        <div className="space-y-5">
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Saldo disponível</p>
+            <p className="text-3xl font-bold tracking-tight text-foreground">
+              {formatCurrency(balance)}
+            </p>
+          </div>
 
           {userName && (
-            <div className="flex items-center gap-2 pt-2 border-t border-white/20">
-              <Avatar className="h-6 w-6 border-2 border-white/30">
+            <div className="flex items-center gap-2 pt-4 border-t">
+              <Avatar className="h-6 w-6 border">
                 <AvatarImage src={userAvatar || "/placeholder.svg"} alt={userName} />
-                <AvatarFallback className="text-xs bg-white/20">{userName.charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="text-xs">{userName.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <span className="text-xs opacity-90 truncate">{userName}</span>
+              <span className="text-xs text-muted-foreground truncate">{userName}</span>
             </div>
           )}
         </div>

@@ -198,31 +198,28 @@ export default function CardsPage() {
 
 
           {wallets.length > 0 && (
-            <Card className="p-4 md:p-6">
-              <h3 className="text-lg font-semibold mb-4">Resumo de Carteiras e Débito</h3>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Total em Carteiras</p>
-                  <p className="text-2xl font-bold text-primary">
-                    {formatCurrency(walletStats.totalBalance)}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">{walletStats.walletCount} carteira(s)</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Total em Débito</p>
-                  <p className="text-2xl font-bold text-secondary">
-                    {formatCurrency(walletStats.totalDebitBalance)}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">{walletStats.debitCardCount} cartão(ões)</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Saldo Total</p>
-                  <p className="text-2xl font-bold text-primary">
-                    {formatCurrency(walletStats.grandTotal)}
-                  </p>
-                </div>
+            <div className="grid gap-4 sm:grid-cols-3 mb-6 p-4 md:p-6 bg-card rounded-xl border shadow-sm">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Total em Carteiras</p>
+                <p className="text-2xl font-bold text-primary">
+                  {formatCurrency(walletStats.totalBalance)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">{walletStats.walletCount} carteira(s)</p>
               </div>
-            </Card>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Total em Débito</p>
+                <p className="text-2xl font-bold text-secondary">
+                  {formatCurrency(walletStats.totalDebitBalance)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">{walletStats.debitCardCount} cartão(ões)</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Saldo Total</p>
+                <p className="text-2xl font-bold text-primary">
+                  {formatCurrency(walletStats.grandTotal)}
+                </p>
+              </div>
+            </div>
           )}
 
           <div className="grid gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -259,29 +256,26 @@ export default function CardsPage() {
 
 
           {creditCardStats.cards.length > 0 && (
-            <Card className="p-4 md:p-6">
-              <h3 className="text-lg font-semibold mb-4">Resumo de Crédito</h3>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Limite Total</p>
-                  <p className="text-2xl font-bold text-primary">
-                    {formatCurrency(creditCardStats.totalLimit)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Disponível</p>
-                  <p className="text-2xl font-bold text-secondary">
-                    {formatCurrency(creditCardStats.totalAvailable)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Utilizado</p>
-                  <p className="text-2xl font-bold text-destructive">
-                    {formatCurrency(creditCardStats.totalUsed)}
-                  </p>
-                </div>
+            <div className="grid gap-4 sm:grid-cols-3 mb-6 p-4 md:p-6 bg-card rounded-xl border shadow-sm">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Limite Total</p>
+                <p className="text-2xl font-bold text-primary">
+                  {formatCurrency(creditCardStats.totalLimit)}
+                </p>
               </div>
-            </Card>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Disponível</p>
+                <p className="text-2xl font-bold text-secondary">
+                  {formatCurrency(creditCardStats.totalAvailable)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Utilizado</p>
+                <p className="text-2xl font-bold text-destructive">
+                  {formatCurrency(creditCardStats.totalUsed)}
+                </p>
+              </div>
+            </div>
           )}
 
           <div className="grid gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">

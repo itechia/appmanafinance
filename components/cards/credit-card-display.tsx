@@ -60,42 +60,41 @@ export function CreditCardDisplay({
   const displayInvoiceValue = invoiceAmount !== undefined ? invoiceAmount : used
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-300">
-      <div
-        className="relative h-48 p-6 text-white rounded-t-xl"
-        style={{
-          background: color,
-        }}
-      >
-        <div className="flex items-start justify-between">
+    <Card className="hover:shadow-md transition-all duration-300 overflow-hidden border-l-4" style={{ borderLeftColor: color }}>
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-4">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-xl font-bold" style={{ color: color }}>{name}</h3>
               {hasDebit && (
-                <Badge variant="secondary" className="bg-white/20 text-white border-0 text-xs">
+                <Badge variant="secondary" className="text-xs font-normal">
                   Débito
                 </Badge>
               )}
               {hasCredit && (
-                <Badge variant="secondary" className="bg-white/20 text-white border-0 text-xs">
+                <Badge variant="secondary" className="text-xs font-normal">
                   Crédito
                 </Badge>
               )}
             </div>
-            <h3 className="text-xl font-bold">{name}</h3>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <CreditCard className="h-3 w-3" />
+              <span className="text-xs font-mono">•••• {lastDigits}</span>
+            </div>
             {userName && (
               <div className="flex items-center gap-2 mt-2">
-                <Avatar className="h-5 w-5 border border-white/30">
+                <Avatar className="h-5 w-5 border">
                   <AvatarImage src={userAvatar || "/placeholder.svg"} />
                   <AvatarFallback className="text-[10px]">{userName.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <span className="text-xs opacity-90">{userName}</span>
+                <span className="text-xs text-muted-foreground opacity-90">{userName}</span>
               </div>
             )}
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                <MoreVertical className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
+                <MoreVertical className="h-5 w-5 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -105,101 +104,89 @@ export function CreditCardDisplay({
           </DropdownMenu>
         </div>
 
-        <div className="absolute bottom-6 left-6 right-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs opacity-75">Número do cartão</p>
-              <p className="text-lg font-mono tracking-wider">•••• {lastDigits}</p>
-            </div>
-            <CreditCard className="h-8 w-8 opacity-75" />
-          </div>
-        </div>
-      </div>
-
-      <div className="p-6 space-y-4">
-        {hasDebit && (
-          <div className="pb-4 border-b">
-            <p className="text-xs text-muted-foreground mb-1">Saldo em conta</p>
-            <p className="text-2xl font-bold text-primary">
-              {formatCurrency(balance)}
-            </p>
-          </div>
-        )}
-
-        {hasCredit && (
-          <>
-            <div className="pb-2 border-b">
-              <div className="flex justify-between items-center mb-1">
-                <p className="text-xs text-muted-foreground">Limite do Cartão</p>
-              </div>
-              <p className="text-lg font-semibold text-primary">
-                {formatCurrency(limit)}
+        <div className="space-y-5">
+          {hasDebit && (
+            <div className={hasCredit ? "pb-4 border-b" : ""}>
+              <p className="text-xs text-muted-foreground mb-1">Saldo em conta</p>
+              <p className="text-2xl font-bold text-primary">
+                {formatCurrency(balance)}
               </p>
             </div>
+          )}
 
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Limite utilizado</span>
-                <span className="text-sm font-medium">{usagePercentage.toFixed(0)}%</span>
-              </div>
-              <Progress
-                value={usagePercentage}
-                className="h-2"
-                indicatorClassName={usagePercentage > 80 ? "bg-red-600" : "bg-emerald-500"}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+          {hasCredit && (
+            <>
               <div>
-                <p className="text-xs text-muted-foreground">Disponível</p>
-                <p className="text-lg font-semibold text-emerald-600">{formatCurrency(available)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Vencimento</p>
-                <p className="text-lg font-semibold">Dia {dueDate}</p>
-              </div>
-            </div>
+                <div className="flex justify-between items-end mb-2">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Limite utilizado</p>
+                    <span className="text-sm font-medium">{usagePercentage.toFixed(0)}%</span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground mb-1">Limite Total</p>
+                    <p className="text-sm font-semibold text-primary">{formatCurrency(limit)}</p>
+                  </div>
+                </div>
 
-            <div className="pt-4 border-t flex flex-col gap-3">
-              <div className="flex justify-between items-start">
+                <Progress
+                  value={usagePercentage}
+                  className="h-2"
+                  indicatorClassName={usagePercentage > 80 ? "bg-red-600" : "bg-emerald-500"}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-2">
                 <div>
-                  <span className="text-sm text-muted-foreground block">Fatura atual</span>
-                  {invoiceDate && (
-                    <span className="text-xs font-medium text-muted-foreground capitalize">
-                      {format(invoiceDate, "MMMM/yyyy", { locale: ptBR })}
+                  <p className="text-xs text-muted-foreground">Disponível</p>
+                  <p className="text-lg font-semibold text-emerald-600">{formatCurrency(available)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Vencimento</p>
+                  <p className="text-lg font-semibold">Dia {dueDate}</p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t flex flex-col gap-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-sm text-muted-foreground block">Fatura atual</span>
+                    {invoiceDate && (
+                      <span className="text-xs font-medium text-muted-foreground capitalize">
+                        {format(invoiceDate, "MMMM/yyyy", { locale: ptBR })}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xl font-bold text-destructive">
+                      {formatCurrency(displayInvoiceValue)}
                     </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  {onViewHistory && (
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-xs h-9"
+                      onClick={onViewHistory}
+                    >
+                      Ver histórico
+                    </Button>
+                  )}
+                  {displayInvoiceValue > 0 && onPayInvoice && (
+                    <Button
+                      variant="destructive"
+                      className="flex-1 h-9 text-xs font-semibold"
+                      onClick={onPayInvoice}
+                    >
+                      Pagar fatura
+                    </Button>
                   )}
                 </div>
-                <div className="text-right">
-                  <span className="text-xl font-bold text-destructive">
-                    {formatCurrency(displayInvoiceValue)}
-                  </span>
-                </div>
               </div>
-
-              <div className="flex gap-2">
-                {onViewHistory && (
-                  <Button
-                    variant="outline"
-                    className="flex-1 text-xs h-9"
-                    onClick={onViewHistory}
-                  >
-                    Ver histórico
-                  </Button>
-                )}
-                {displayInvoiceValue > 0 && onPayInvoice && (
-                  <Button
-                    variant="destructive"
-                    className="flex-1 h-9 text-xs font-semibold"
-                    onClick={onPayInvoice}
-                  >
-                    Pagar fatura
-                  </Button>
-                )}
-              </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </Card>
   )

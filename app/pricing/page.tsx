@@ -1,26 +1,102 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Sparkles, ArrowLeft, ShieldCheck, Zap } from "lucide-react"
+import { Check, Sparkles, ArrowLeft, Zap, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PLAN_FEATURES } from "@/lib/types/subscription"
 import { useRouter } from "next/navigation"
 import { cn, formatCurrency } from "@/lib/utils"
-
 import { useUser } from "@/lib/user-context"
+import { PRODUCTS } from "@/lib/products"
+import { useToast } from "@/hooks/use-toast"
 
 export default function PricingPage() {
   const { currentUser } = useUser()
   const [interval, setInterval] = useState<"monthly" | "yearly">("monthly")
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { toast } = useToast()
 
   const proFeatures = PLAN_FEATURES.pro.features
   const freeFeatures = PLAN_FEATURES.free.features
 
-  const monthlyPrice = 29.99
-  const yearlyPrice = 299.99
+  const selectedProduct = PRODUCTS.find(p => p.id === (interval === "monthly" ? "pro-monthly" : "pro-yearly"))
+
+  const monthlyPrice = PRODUCTS.find(p => p.id === "pro-monthly")?.priceInCents! / 100
+  const yearlyPrice = PRODUCTS.find(p => p.id === "pro-yearly")?.priceInCents! / 100
+
   const isPro = currentUser?.plan === 'pro'
+
+  const handleSubscribe = async () => {
+    if (!currentUser) return router.push("/login")
+    if (!selectedProduct?.priceId) {
+      toast({ title: "Erro de Configuração", description: "O ID do preço não foi configurado.", variant: "destructive" })
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          priceId: selectedProduct.priceId,
+          userId: currentUser.id,
+          email: currentUser.email,
+        }),
+      })
+
+      if (!response.ok) {
+        const text = await response.text()
+        console.error("Checkout API Error:", text)
+        throw new Error(text || "Erro ao iniciar checkout")
+      }
+
+      const data = await response.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        throw new Error(data.error || "Failed to create checkout session")
+      }
+    } catch (error: any) {
+      console.error("Checkout error:", error)
+      toast({ title: "Erro", description: "Não foi possível iniciar o checkout. Verifique o console.", variant: "destructive" })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleManageSubscription = async () => {
+    if (!currentUser?.stripeCustomerId) {
+      // Fallback if no customer ID recorded yet
+      toast({ title: "Erro", description: "ID do cliente não encontrado.", variant: "destructive" })
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const response = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerId: currentUser.stripeCustomerId,
+        }),
+      })
+
+      const data = await response.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        throw new Error(data.error || "Failed to create portal session")
+      }
+    } catch (error: any) {
+      console.error("Portal error:", error)
+      toast({ title: "Erro", description: "Não foi possível abrir o portal.", variant: "destructive" })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -105,7 +181,7 @@ export default function PricingPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <Button variant="outline" className="w-full h-12 text-base font-medium" disabled>
-                {isPro ? "Downgrade (Via Configurações)" : "Plano Atual"}
+                Plano Gratuito
               </Button>
               <div className="space-y-4">
                 <p className="text-sm font-medium text-foreground">O plano inclui:</p>
@@ -160,38 +236,33 @@ export default function PricingPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              <Button
-                className="w-full h-12 text-base font-medium bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
-                disabled={isPro}
-                onClick={async () => {
-                  try {
-                    const { data: { session } } = await import('@/lib/supabase').then(m => m.supabase.auth.getSession())
-                    if (!session) return router.push('/login')
-
-                    const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-checkout-session`, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.access_token}`
-                      },
-                      body: JSON.stringify({ interval })
-                    })
-
-                    const { sessionId } = await response.json()
-                    if (sessionId) {
-                      const stripe = await import('@/lib/stripe').then(m => m.getStripe())
-                      if (stripe) {
-                        await (stripe as any).redirectToCheckout({ sessionId })
-                      }
-                    }
-                  } catch (error) {
-                    console.error("Checkout failed:", error)
-                  }
-                }}
-              >
-                {isPro ? "Plano Atual" : "Assinar Agora"}
-                {!isPro && <Zap className="h-4 w-4 ml-2 fill-current" />}
-              </Button>
+              {isPro ? (
+                <Button
+                  className="w-full h-12 text-base font-medium bg-secondary hover:bg-secondary/90 shadow-lg transition-all duration-300"
+                  onClick={handleManageSubscription}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Carregando..." : (
+                    <>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Gerenciar Assinatura
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  className="w-full h-12 text-base font-medium bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
+                  onClick={handleSubscribe}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Processando..." : (
+                    <>
+                      Assinar Agora
+                      <Zap className="h-4 w-4 ml-2 fill-current" />
+                    </>
+                  )}
+                </Button>
+              )}
 
               <div className="space-y-4">
                 <p className="text-sm font-medium text-foreground">Tudo do Grátis, mais:</p>
