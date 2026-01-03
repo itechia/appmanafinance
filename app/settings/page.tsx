@@ -12,7 +12,9 @@ import { SubscriptionManagement } from "@/components/settings/subscription-manag
 import { DeleteData } from "@/components/settings/delete-data"
 import { DeleteAccount } from "@/components/settings/delete-account"
 import { useAuth } from "@/lib/auth-context"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+import { useEffect } from "react"
 
 type SettingsSection = "profile" | "notifications" | "whatsapp" | "connections" | "subscription" | "delete" | "account"
 
@@ -72,7 +74,45 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile")
   const { user } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
   const isPro = user?.plan === "pro"
+
+  useEffect(() => {
+    const checkPayment = async () => {
+      if (searchParams.get('success') === 'true' && user?.id) {
+        // Clear param immediately to avoid double firing
+        // router.replace("/settings") 
+        // Better to wait until sync is done to clear, or use a ref to prevent double call?
+        // Let's use a flag or just run it. useEffect runs on mount.
+
+        toast({ title: "Processando...", description: "Verificando status da sua assinatura." })
+
+        try {
+          const res = await fetch("/api/stripe/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user.id }),
+          })
+          const data = await res.json()
+
+          if (data.success) {
+            toast({ title: "Sucesso!", description: "Plano Pro ativado corretamente." })
+            // Refresh page to update context
+            setTimeout(() => {
+              window.location.href = "/settings"
+            }, 1000)
+          } else {
+            toast({ title: "Aviso", description: data.message || "Pagamento não confirmado ainda." })
+          }
+        } catch (error) {
+          console.error("Sync error", error)
+        }
+      }
+    }
+
+    checkPayment()
+  }, [searchParams, user, toast])
 
   const handleSectionClick = (sectionId: SettingsSection, requiresPro: boolean) => {
     if (requiresPro && !isPro) {
@@ -105,7 +145,7 @@ export default function SettingsPage() {
                     activeSection === section.id && "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary",
                     isLocked && "opacity-60",
                     (section.id === "delete" || section.id === "account") &&
-                      "text-destructive hover:text-destructive hover:bg-destructive/10",
+                    "text-destructive hover:text-destructive hover:bg-destructive/10",
                   )}
                   onClick={() => handleSectionClick(section.id, section.requiresPro)}
                 >

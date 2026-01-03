@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { supabase } from "@/lib/supabase"; // Use supabase client (admin/service role preferred if available)
+import { supabaseAdmin } from "@/lib/supabase-admin"; // Use admin client to bypass RLS
 
 // Initialize Stripe
 // const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
                     // but imports usually export the anon client.
                     // For now, we'll try standard update. If it fails, RLS needs adjustment or use Admin client.
 
-                    await supabase
+                    await supabaseAdmin
                         .from("profiles")
                         .update({
                             plan: "pro",
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
                 const customerId = subscription.customer as string;
 
                 // Revoke access
-                await supabase
+                await supabaseAdmin
                     .from("profiles")
                     .update({
                         plan: "free",
