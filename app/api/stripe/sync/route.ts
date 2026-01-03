@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 export async function POST(req: NextRequest) {
     try {
         const { userId } = await req.json();
+        console.log("Sync request for user:", userId);
 
         if (!userId) {
             return NextResponse.json({ error: "Missing userId" }, { status: 400 });
